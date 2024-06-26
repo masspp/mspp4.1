@@ -10,6 +10,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -36,6 +37,12 @@ public class ProfileCanvas extends CanvasBase {
 	protected Font font;
 	
 	protected boolean impulseMode;
+	
+	protected RealMatrix matrix;
+	protected Bounds margin;
+	
+	protected Point startPoint;
+	protected Point currentPoint;
 
 	public ProfileCanvas() {
 		this.data = null;
@@ -44,6 +51,98 @@ public class ProfileCanvas extends CanvasBase {
 		this.profileColor = Color.BLACK;
 		this.font = new Font("Monospaced", 12);
 		this.impulseMode = false;
+		this.matrix = null;
+		this.margin = null;
+		
+		this.startPoint = null;
+		this.currentPoint = null;
+		
+		this.addMouseEvents();
+	}
+	
+	protected void addMouseEvents() {
+		ProfileCanvas me = this;
+		this.addEventHandler(
+			MouseEvent.MOUSE_PRESSED,
+			(event)->{
+				me.onMousePressed(event);
+			}
+		);
+		
+		this.addEventHandler(
+			MouseEvent.MOUSE_DRAGGED,
+			(event) -> {
+				me.onMouseMoved(event);
+			}
+		);
+		
+		this.addEventHandler(
+			MouseEvent.MOUSE_RELEASED,
+			(event) -> {
+				me.onMouseReleased(event);
+			}
+		);
+		
+		this.addEventHandler(
+			MouseEvent.MOUSE_CLICKED,
+			(event) -> {
+				me.onMouseClicked(event);
+			}
+		);	
+	}
+	
+	protected void onMousePressed(MouseEvent event) {
+        double x = event.getX();
+        double y = event.getY();
+        
+        this.startPoint = new Point(x, y);
+    }
+	
+	protected void onMouseMoved(MouseEvent event) {
+		if(this.startPoint != null) {
+			double x = event.getX();
+			double y = event.getY();
+			this.currentPoint = new Point(x, y);
+			
+			this.draw();
+		}
+	}
+	
+	protected void onMouseClicked(MouseEvent event) {
+		if(event.getClickCount() == 2) {
+			this.startPoint = null;
+			this.currentPoint = null;
+			this.xRanges.clear();
+			this.draw();
+		}		
+	}
+	
+	protected void onMouseReleased(MouseEvent event) {
+		if(this.startPoint != null) {
+			if(this.startPoint.getX() >= this.margin.getLeft() && this.startPoint.getX() <= this.getWidth() - this.margin.getRight() &&
+                    this.startPoint.getY() >= this.margin.getTop() && this.startPoint.getY() <= this.getHeight() - this.margin.getBottom()) {
+                double x = event.getX();
+                x = Math.max(x, this.margin.getLeft());
+                x = Math.min(x, this.getWidth() - this.margin.getRight());
+                
+                double startX = Math.min(this.startPoint.getX(), x);                
+                double endX = Math.max(this.startPoint.getX(), x);
+                
+                RealMatrix inverse = MatrixUtils.inverse(this.matrix);
+                double[] start = { startX, 0.0, 1.0 };
+                double[] end = { endX, 0.0, 1.0 };
+                double dataStart = inverse.operate(start)[0];
+                double dataEnd = inverse.operate(end)[0];
+                
+                if(dataEnd > dataStart + 0.01) {                
+                	Range range = new Range(dataStart, dataEnd);
+                	this.xRanges.push(range);
+                }
+			}
+		}
+		this.startPoint = null;
+		this.currentPoint = null;
+		this.draw();
 	}
 	
 	public void setImpulseMode(boolean impulseMode) {
@@ -66,6 +165,8 @@ public class ProfileCanvas extends CanvasBase {
 
 	public void setPoints(DataPoints points) {
 		this.data = new DrawingData(points);
+		this.xRanges.clear();
+		this.yRanges.clear();
 		this.draw();
 	}
 
@@ -106,7 +207,7 @@ public class ProfileCanvas extends CanvasBase {
 		end = Math.max(end, start + 0.01);
 		return new Range(start, end);
 	}
-
+	
 	private Range getYRange() {
 		double start = 0.0;
 		double end = 0.0;
@@ -122,7 +223,7 @@ public class ProfileCanvas extends CanvasBase {
 				startIndex = Math.max(0, -startIndex - 2);
 			}
 			if (endIndex < 0) {
-				endIndex = -endIndex - 1;
+				endIndex = - endIndex - 1;
 			}
 
 			for (int i = startIndex; i <= endIndex; i++) {
@@ -379,6 +480,33 @@ public class ProfileCanvas extends CanvasBase {
 			}
 		}
 	}
+	
+	protected void drawBackground(GraphicsContext gc, RealMatrix matrix, double width, double height, Bounds margin,
+			Point startPoint, Point currentPoint) {		
+		if (startPoint != null && currentPoint != null) {
+			if (startPoint.getY() >= margin.getTop() && startPoint.getX() >= margin.getLeft() && startPoint.getX() <= width - margin.getRight()) {
+				gc.setFill(Color.LIGHTGRAY);
+				double px1 = startPoint.getX();
+				double px2 = currentPoint.getX();
+				if(px1 != px2) {
+					double startX = Math.min(px1, px2);
+					startX = Math.max(startX, margin.getLeft());
+					startX = Math.min(startX, width - margin.getRight());
+				
+					double endX = Math.max(px1, px2);
+					endX = Math.max(endX, margin.getLeft());
+					endX = Math.min(endX, width - margin.getRight());
+				
+					double endY = height - margin.getBottom();
+					double startY = margin.getTop();
+				
+					if (startPoint.getY() <= height - margin.getBottom()) {
+						gc.fillRect(startX,  startY,  endX - startX,  endY - startY);
+					}
+				}
+			}
+		}
+	}
 
 	@Override
 	protected void onDraw(GraphicsContext gc, double width, double height) {
@@ -394,16 +522,17 @@ public class ProfileCanvas extends CanvasBase {
 		
 			Bounds margin = this.calculateMargin(xLabels, yLabels);
 			RealMatrix matrix = calculateMatrix(width, height, xRange, yRange, margin);
+			this.matrix = matrix;
+			this.margin = margin;
 		
 			int level = this.data.calculateLevel(width, xRange.getStart(), xRange.getEnd());
 			List<DrawingPoint> points = this.data.getPoints(level);
 		
+			drawBackground(gc, matrix, width, height, margin, this.startPoint, this.currentPoint);
 			drawProfile(gc, matrix, width, height, margin, points);
 			drawRect(gc, margin, width, height);
 			drawXAxis(gc, xTicks, xLabels, matrix, margin, width, height);
 			drawYAxis(gc, yTicks, yLabels, matrix, margin, width, height);
 		}
 	}
-	
-
 }

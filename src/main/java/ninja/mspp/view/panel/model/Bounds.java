@@ -38,6 +38,11 @@ public class Bounds {
 	public int getHeight() {
 		return (this.bottom - this.top);
 	}
+	
+	@Override
+	public String toString() {
+		return "Bounds (top:" + this.top + ", right:" + this.right + ", bottom:" + this.bottom + ", left:" + this.left + ")";
+	}
 
 	public boolean isInBound(Point point) {
 		boolean isInBound = (point.getX() >= this.left) && (point.getX() <= this.right) && (point.getY() >= this.top) && (point.getY() <= this.bottom);

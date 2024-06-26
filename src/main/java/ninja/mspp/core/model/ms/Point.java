@@ -16,6 +16,12 @@ public class Point implements Comparable<Point> {
 	public double getY() {
 		return this.y;
 	}
+	
+	@Override
+	public String toString() {
+		return "Point (" + this.x + ", " + this.y + ")";
+		
+	}
 
 	@Override
 	public int compareTo(Point pt) {

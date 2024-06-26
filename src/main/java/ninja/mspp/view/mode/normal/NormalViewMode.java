@@ -5,9 +5,9 @@ import java.util.ResourceBundle;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
@@ -19,7 +19,7 @@ import ninja.mspp.view.part.table.spectrum.SpectrumTableManager;
 
 public class NormalViewMode implements Initializable {
 	@FXML
-	private GridPane tableGridPane;
+	private SplitPane tablePane;
 	
 	@FXML
 	private BorderPane spectrumPane;
@@ -39,13 +39,15 @@ public class NormalViewMode implements Initializable {
 		NormalViewModeManager manager = NormalViewModeManager.getInstance();
 		
 		TableView<Sample> sampleTable = SampleTableManager.getInstance().createTableView();
-		this.tableGridPane.add(sampleTable, 0, 0);
+		this.tablePane.getItems().add(sampleTable);
 		
 		TableView<Chromatogram> chromatogramTable = ChromatogramTableManager.getInstance().createTableView();
-		this.tableGridPane.add(chromatogramTable, 0, 1);
+		this.tablePane.getItems().add(chromatogramTable);
 		
 		TableView<Spectrum> spectrumTable = SpectrumTableManager.getInstance().createTableView();
-		this.tableGridPane.add(spectrumTable, 0, 2);
+		this.tablePane.getItems().add(spectrumTable);
+		
+		this.tablePane.setDividerPositions(0.2, 0.4, 1.0);
 		
 		SpectrumCanvas spectrumCanvas = new SpectrumCanvas();
 		this.spectrumPane.setCenter(spectrumCanvas);

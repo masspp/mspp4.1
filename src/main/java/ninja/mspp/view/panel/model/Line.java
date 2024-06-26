@@ -23,27 +23,26 @@ public class Line {
 	
 	private static 	Point calculateCrossedPoint(Line line1, Line line2) {
 		Point result = null;
-		
-		double x1 = line1.getPt1().getX();
-        double y1 = line1.getPt1().getY();
-        double x2 = line1.getPt2().getX();
-        double y2 = line1.getPt2().getY();
-        double x3 = line2.getPt1().getX();
-        double y3 = line2.getPt1().getY();
-        double x4 = line2.getPt2().getX();
-        double y4 = line2.getPt2().getY();;
+				
+		double d1x = line1.getPt2().getX() - line1.getPt1().getX();
+		double d1y = line1.getPt2().getY() - line1.getPt1().getY();
+		double p1x = line1.getPt1().getX();
+		double p1y = line1.getPt1().getY();
+		double d2x = line2.getPt2().getX() - line2.getPt1().getX();
+		double d2y = line2.getPt2().getY() - line2.getPt1().getY();
+		double p2x = line2.getPt1().getX();
+		double p2y = line2.getPt1().getY();
 
-        double denom = (x4 - x3) * (y2 - y1) - (x2 - x1) * (y4 - y3);
-        if (Math.abs(denom) > 0.000001) {
-        	double t = ((x3 - x1) * (y4 - y3) - (y3 - y1) * (x4 - x3)) / denom;
-        	double u = ((x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1)) / denom;
-
-        	if(t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0) {
-        		double interX = x1 + t * (x2 - x1);
-        		double interY = y1 + t * (y2 - y1);
-        		result = new Point(interX, interY);
-        	}
-        }
+		double detA = - d1x * d2y + d2x * d1y;
+		if(Math.abs(detA) > 0.0000001) {
+			double t = (- d2y * (p2x - p1x) + d2x * (p2y - p1y)) / detA;
+			double u = (- d1y * (p2x - p1x) + d1x * (p2y - p1y)) / detA;
+			if (t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0) {
+				double x = p1x + t * d1x;
+				double y = p1y + t * d1y;
+				result = new Point(x, y);
+			}
+		}
 
         return result;
 	}
@@ -59,19 +58,19 @@ public class Line {
 		}
 
 		if (!in1 || !in2) {
-			Point p1 = calculateCrossedPoint(this, new Line(new Point(bounds.getLeft(), bounds.getTop()), new Point(bounds.getLeft(), bounds.getBottom())));
+			Point p1 = calculateCrossedPoint(this, new Line(new Point(bounds.getLeft(), bounds.getTop()), new Point(bounds.getRight(), bounds.getTop())));
 			if (p1 != null) {
 				list.add(p1);
 			}
-			Point p2 = calculateCrossedPoint(this, new Line(new Point(bounds.getLeft(), bounds.getBottom()), new Point(bounds.getRight(), bounds.getBottom())));
+			Point p2 = calculateCrossedPoint(this, new Line(new Point(bounds.getRight(), bounds.getTop()), new Point(bounds.getRight(), bounds.getBottom())));
 			if (p2 != null) {
 				list.add(p2);
 			}
-			Point p3 = calculateCrossedPoint(this, new Line(new Point(bounds.getRight(), bounds.getBottom()), new Point(bounds.getRight(), bounds.getTop())));
+			Point p3 = calculateCrossedPoint(this, new Line(new Point(bounds.getLeft(), bounds.getBottom()), new Point(bounds.getRight(), bounds.getBottom())));
 			if (p3 != null) {
 				list.add(p3);
 			}
-			Point p4 = calculateCrossedPoint(this, new Line(new Point(bounds.getRight(), bounds.getTop()), new Point(bounds.getLeft(), bounds.getTop())));
+			Point p4 = calculateCrossedPoint(this, new Line(new Point(bounds.getLeft(), bounds.getTop()), new Point(bounds.getLeft(), bounds.getBottom())));
 			if (p4 != null) {
 				list.add(p4);
 			}
