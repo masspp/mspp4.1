@@ -30,7 +30,6 @@ public class MzmlReader {
 			MzmlSpectrum mzmlSpectrum = new MzmlSpectrum(scan);
 			sample.getSpectra().add(mzmlSpectrum);
         }
-		System.out.println("Completed reading the file.");
 		return sample;
 	}
 }

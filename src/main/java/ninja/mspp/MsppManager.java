@@ -6,7 +6,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -37,6 +40,10 @@ public class MsppManager {
 	private Chromatogram activeChromatogram;
 	private Stage mainStage;
 	private MainFrame mainFrame;
+	private Preferences preferences;
+	private Properties status;
+	private ResourceBundle config;
+	private ResourceBundle messages;
 	
 	private MsppManager() {
 		this.openedSamples = new ArrayList<Sample>();
@@ -46,6 +53,9 @@ public class MsppManager {
 		this.activeChromatogram = null;
 		this.mainStage = null;
 		this.mainFrame = null;
+		this.preferences = Preferences.userRoot().node("mspp4.1/parameters");
+		this.status = new Properties();
+		this.config = null;
 	}
 	
 	public List<ListenerInfo> getListeners() {
@@ -159,6 +169,38 @@ public class MsppManager {
 	
 	public List<Sample> getOpenedSamples() {
 		return openedSamples;
+	}
+	
+	public void saveParameter(String key, String value) {
+		this.preferences.put(key, value);
+	}
+	
+	public String getParameter(String key) {
+		return this.preferences.get(key, null);
+	}
+	
+	public void setStatus(String key, String value) {
+		this.status.setProperty(key, value);
+	}
+	
+	public String getStatus(String key) {
+		return this.status.getProperty(key, null);
+	}
+	
+	public ResourceBundle getConfig() {
+		if (this.config == null) {
+			this.config = ResourceBundle.getBundle("ninja.mspp.conf.config");
+		}
+
+		return this.config;
+	}
+	
+	public ResourceBundle getMessages() {
+		if (this.messages == null) {
+			this.messages = ResourceBundle.getBundle("ninja.mspp.conf.messages");
+		}
+
+		return this.messages;
 	}
 
 	public static MsppManager getInstance() {

@@ -1,5 +1,7 @@
 package ninja.mspp.view.part.table.sample;
 
+import java.util.ResourceBundle;
+
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableView;
@@ -13,6 +15,7 @@ public class SampleTableListener {
 	@OnOpenSample
 	public void onOpenSample(Sample sample) {
 		MsppManager manager = MsppManager.getInstance();
+		ResourceBundle messages = manager.getMessages();
 		
 		boolean found = false;
 		for (Sample s : manager.getOpenedSamples()) {
@@ -24,8 +27,8 @@ public class SampleTableListener {
 		if(found) {
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setTitle("Error");
-			alert.setHeaderText("Sample already opened");
-			alert.setContentText("The sample is already opened.");
+			alert.setHeaderText(messages.getString("file.already_opened.title"));
+			alert.setContentText(messages.getString("file.already_opened.content"));
 			alert.showAndWait();
 		}
 		else {

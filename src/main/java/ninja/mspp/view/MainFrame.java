@@ -70,6 +70,7 @@ public class MainFrame implements Initializable {
 					Parent parent = (Parent)method.invoke(null);
 					this.pane.setCenter(parent);
 					VIEW_MODE.set(name);
+					manager.setStatus("VIEW_MODE", name);
 				}
 				catch (Exception e) {
 					e.printStackTrace();

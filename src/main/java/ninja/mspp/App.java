@@ -1,5 +1,7 @@
 package ninja.mspp;
 
+import java.util.ResourceBundle;
+
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -32,7 +34,14 @@ public class App extends Application {
 			Image iconImage = new Image(getClass().getResourceAsStream("/ninja/mspp/images/icon/" + icon));
 			primaryStage.getIcons().add(iconImage);
 		}
-		primaryStage.setTitle("Mass++ ver. 4.1");
+		
+		ResourceBundle config = manager.getConfig();
+		primaryStage.setTitle(config.getString("app.name"));
+		
+		int width = Integer.parseInt(config.getString("app.width"));
+		int height = Integer.parseInt(config.getString("app.height"));
+		primaryStage.setWidth(width);
+		primaryStage.setHeight(height);
 
 		primaryStage.show();
 	}

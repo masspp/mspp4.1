@@ -25,6 +25,7 @@ public class MzmlSpectrum extends Spectrum {
 			scan.getScanningRange().upperEndpoint(),
 			isCentroidMode(scan)
 		);
+		this.scan = scan;
 	}	
 
 	@Override

@@ -10,7 +10,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ninja.mspp.view.mode.normal.NormalViewMode">
    <center>
-      <SplitPane dividerPositions="0.3" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.3" BorderPane.alignment="CENTER">
          <items>
             <GridPane fx:id="tableGridPane">
               <columnConstraints>
@@ -22,17 +22,17 @@
                 <RowConstraints vgrow="SOMETIMES" />
               </rowConstraints>
             </GridPane>
-            <BorderPane prefHeight="200.0" prefWidth="200.0">
+            <BorderPane>
                <center>
-                  <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+                  <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
                     <tabs>
                       <Tab text="Profile">
                       	<BorderPane>
                               <center>
-                                 <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" BorderPane.alignment="CENTER">
+                                 <SplitPane dividerPositions="0.5" orientation="VERTICAL" BorderPane.alignment="CENTER">
                                     <items>
-                                       <BorderPane fx:id="chromatogramPane" prefHeight="200.0" prefWidth="200.0" />
-                                       <BorderPane fx:id="spectrumPane" prefHeight="200.0" prefWidth="200.0" />
+                                       <BorderPane fx:id="chromatogramPane" />
+                                       <BorderPane fx:id="spectrumPane" />
                                     </items>
                                  </SplitPane>
                               </center></BorderPane>

@@ -11,6 +11,8 @@ import javafx.scene.layout.GridPane;
 import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.view.panel.ChromatogramCanvas;
+import ninja.mspp.view.panel.SpectrumCanvas;
 import ninja.mspp.view.part.table.chromatogram.ChromatogramTableManager;
 import ninja.mspp.view.part.table.sample.SampleTableManager;
 import ninja.mspp.view.part.table.spectrum.SpectrumTableManager;
@@ -34,6 +36,8 @@ public class NormalViewMode implements Initializable {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
+		NormalViewModeManager manager = NormalViewModeManager.getInstance();
+		
 		TableView<Sample> sampleTable = SampleTableManager.getInstance().createTableView();
 		this.tableGridPane.add(sampleTable, 0, 0);
 		
@@ -42,5 +46,33 @@ public class NormalViewMode implements Initializable {
 		
 		TableView<Spectrum> spectrumTable = SpectrumTableManager.getInstance().createTableView();
 		this.tableGridPane.add(spectrumTable, 0, 2);
+		
+		SpectrumCanvas spectrumCanvas = new SpectrumCanvas();
+		this.spectrumPane.setCenter(spectrumCanvas);
+		manager.setSpectrumCanvas(spectrumCanvas);
+		this.spectrumPane.widthProperty().addListener(
+			(observable, oldVal, newVal) -> {
+				spectrumCanvas.setWidth(newVal.doubleValue());
+			}
+		);
+		this.spectrumPane.heightProperty().addListener(
+			(observable, oldVal, newVal) -> {
+				spectrumCanvas.setHeight(newVal.doubleValue());
+			}
+		);
+		
+		ChromatogramCanvas chromatogramCanvas = new ChromatogramCanvas();
+		this.chromatogramPane.setCenter(chromatogramCanvas);
+		manager.setChromatogramCanvas(chromatogramCanvas);
+		this.chromatogramPane.widthProperty().addListener(
+			(observable, oldVal, newVal) -> {
+				chromatogramCanvas.setWidth(newVal.doubleValue());
+			}
+		);
+		this.chromatogramPane.heightProperty().addListener(
+			(observable, oldVal, newVal) -> {
+				chromatogramCanvas.setHeight(newVal.doubleValue());
+			}
+		);
 	}
 }

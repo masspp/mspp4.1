@@ -24,12 +24,12 @@ public class ChromatogramTableManager {
 		TableView<Chromatogram> table = new TableView<Chromatogram>();
 		
 		TableColumn<Chromatogram, String> nameColumn = new TableColumn<Chromatogram, String>("Name");		
-		nameColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.48));
+		nameColumn.setPrefWidth(100);
 		nameColumn.setCellValueFactory(new PropertyValueFactory<Chromatogram, String>("name"));
 		table.getColumns().add(nameColumn);
 		
 		TableColumn<Chromatogram, Double> mzColumn = new TableColumn<Chromatogram, Double>("m/z");
-		mzColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.48));
+		mzColumn.setPrefWidth(75);
 		mzColumn.setCellValueFactory(new PropertyValueFactory<Chromatogram, Double>("mz"));
 		mzColumn.setCellFactory(
 			(column) -> {
