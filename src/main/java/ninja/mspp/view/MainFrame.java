@@ -43,6 +43,9 @@ public class MainFrame implements Initializable {
 		Menu viewMenu = new Menu("View");
 		menuBar.getMenus().add(viewMenu);
 		
+		Menu toolsMenu = new Menu("Tools");
+		menuBar.getMenus().add(toolsMenu);
+		
 		Menu modeMenu = new Menu("View Mode");
 		viewMenu.getItems().add(modeMenu);
 	

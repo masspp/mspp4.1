@@ -42,9 +42,17 @@ public class App extends Application {
 		int height = Integer.parseInt(config.getString("app.height"));
 		primaryStage.setWidth(width);
 		primaryStage.setHeight(height);
+		
+		primaryStage.setOnCloseRequest(
+			event -> {
+				manager.closeSession();
+			}
+		);
 
 		primaryStage.show();
 	}
+	
+	
 	
 	public static void main(String[] args) {
 		launch(args);

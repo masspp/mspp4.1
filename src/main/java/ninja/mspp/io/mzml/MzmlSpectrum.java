@@ -2,6 +2,8 @@ package ninja.mspp.io.mzml;
 
 import java.util.List;
 
+import com.google.common.collect.Range;
+
 import io.github.msdk.datamodel.IsolationInfo;
 import io.github.msdk.datamodel.MsScan;
 import io.github.msdk.datamodel.MsSpectrumType;
@@ -21,8 +23,8 @@ public class MzmlSpectrum extends Spectrum {
 			scan.getMsLevel(),
 			getPolarity(scan.getPolarity()),
 			getPrecursorMz(scan),
-			scan.getScanningRange().lowerEndpoint(),
-			scan.getScanningRange().upperEndpoint(),
+			getStartMz(scan),
+			getEndMz(scan),
 			isCentroidMode(scan)
 		);
 		this.scan = scan;
@@ -66,7 +68,30 @@ public class MzmlSpectrum extends Spectrum {
 	
 	private static boolean isCentroidMode(MsScan scan) {
         MsSpectrumType type = scan.getSpectrumType();
-        return (type == MsSpectrumType.CENTROIDED);
+        boolean isCentroid = (type == MsSpectrumType.CENTROIDED);
+        return isCentroid;
 
     }
+	
+	private static double getStartMz(MsScan scan) {
+		double startMz = -1.0;
+		if (scan != null) {
+			Range<Double> range = scan.getMzRange();
+			if(range != null) {
+				startMz = range.lowerEndpoint();
+			}
+		}
+		return startMz;
+	}
+	
+	private static double getEndMz(MsScan scan) {
+		double endMz = -1.0;
+		if (scan != null) {
+			Range<Double> range = scan.getMzRange();
+			if (range != null) {
+				endMz = range.upperEndpoint();
+			}
+		}
+		return endMz;
+	}
 }

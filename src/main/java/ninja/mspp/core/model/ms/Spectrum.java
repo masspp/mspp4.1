@@ -30,6 +30,7 @@ public abstract class Spectrum {
 		this.precursor = precursor;
 		this.minMz = minMz;
 		this.maxMz = maxMz;
+		this.centroidMode = centroidMode;
 	}
 	
 	public String getName() {

@@ -16,10 +16,12 @@ public class SpectrumCanvas extends ProfileCanvas {
 	}
 	
 	public void setSpectrum(Spectrum spectrum) {
-		this.setImpulseMode(spectrum.isCentroidMode());
-		DataPoints points = spectrum.readDataPoints();
-		this.spectrum = spectrum;
-		this.setPoints(points);
+		if(spectrum != null) {
+			this.setImpulseMode(spectrum.isCentroidMode());
+			DataPoints points = spectrum.readDataPoints();
+			this.spectrum = spectrum;
+			this.setPoints(points);
+		}
 	}
 }
 

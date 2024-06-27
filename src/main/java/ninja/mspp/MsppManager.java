@@ -1,5 +1,6 @@
 package ninja.mspp;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -11,6 +12,9 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
@@ -18,6 +22,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ninja.mspp.core.annotation.clazz.Listener;
 import ninja.mspp.core.model.listener.ListenerInfo;
@@ -43,7 +48,9 @@ public class MsppManager {
 	private Preferences preferences;
 	private Properties status;
 	private ResourceBundle config;
-	private ResourceBundle messages;
+	private ResourceBundle messages;	
+	private File configFolder;
+	private SessionFactory sessionFactory;
 	
 	private MsppManager() {
 		this.openedSamples = new ArrayList<Sample>();
@@ -56,6 +63,7 @@ public class MsppManager {
 		this.preferences = Preferences.userRoot().node("mspp4.1/parameters");
 		this.status = new Properties();
 		this.config = null;
+		this.configFolder = null;
 	}
 	
 	public List<ListenerInfo> getListeners() {
@@ -125,6 +133,18 @@ public class MsppManager {
 		Parent root = loader.load();
 		T controller = loader.getController();
 		return new ViewInfo<T>(root, controller);
+	}
+	
+	public <T> ViewInfo<T> showDialog(Class<T> clazz, String fxml) throws IOException {
+		ViewInfo<T> info = this.createWindow(clazz, fxml);
+		
+		Stage stage = new Stage();
+		stage.initOwner(this.mainStage);
+		Scene scene = new Scene(info.getWindow());
+		stage.setScene(scene);
+		stage.show();
+		
+		return info;
 	}
 	
 	public Sample getActiveSample() {
@@ -202,7 +222,31 @@ public class MsppManager {
 
 		return this.messages;
 	}
+	
+	public File getConfigFolder() {
+		if(this.configFolder == null) {
+			this.configFolder = new File(System.getProperty("user.home"), ".mspp4.1");
+			if (!this.configFolder.exists()) {
+				this.configFolder.mkdir();
+			}
+		}
 
+		return this.configFolder;
+	}
+	
+	public Session getSession() {
+		if (this.sessionFactory == null) {
+			this.sessionFactory = new Configuration().configure().buildSessionFactory();
+		}
+		return this.sessionFactory.openSession();
+	}
+	
+	public void closeSession() {
+		if (this.sessionFactory != null) {
+			this.sessionFactory.close();
+		}
+	}
+	
 	public static MsppManager getInstance() {
 		if (MsppManager.instance == null) {
             MsppManager.instance = new MsppManager();
