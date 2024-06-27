@@ -256,6 +256,9 @@ public class PeakFilterDialog implements Initializable {
 							setText(text);
 							setAlignment(Pos.CENTER_RIGHT);
 						}
+                        else {
+                        	setText("");
+                        }
 					}
 				};
 				return cell;

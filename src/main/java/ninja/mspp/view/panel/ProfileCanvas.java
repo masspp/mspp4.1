@@ -285,11 +285,15 @@ public class ProfileCanvas extends CanvasBase {
 		double start = 0.0;
 		double end = 0.0;
 
+
 		if (this.xRanges.isEmpty()) {
 			List<DrawingPoint> points = this.data.getPoints(0);
-			start = points.get(0).getX();
-			end = points.get(points.size() - 1).getX();
-		} else {
+			if (!points.isEmpty()) {
+				start = points.get(0).getX();
+				end = points.get(points.size() - 1).getX();
+			}
+		} 
+		else {
 			start = this.xRanges.peek().getStart();
 			end = this.xRanges.peek().getEnd();
 		}
@@ -312,9 +316,15 @@ public class ProfileCanvas extends CanvasBase {
 
 			if (startIndex < 0) {
 				startIndex = Math.max(0, -startIndex - 2);
+				if (startIndex < 0) {
+					startIndex = 0;
+				}
 			}
 			if (endIndex < 0) {
 				endIndex = - endIndex - 1;
+				if (endIndex >= points.size()) {
+					endIndex = points.size() - 1;
+				}
 			}
 
 			for (int i = startIndex; i <= endIndex; i++) {
