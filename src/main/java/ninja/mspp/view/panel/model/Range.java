@@ -20,4 +20,12 @@ public class Range {
 	public double getLength() {
 		return (this.end - this.start);
 	}
+	
+	public boolean contains(double value) {
+		return (this.start <= value && value <= this.end);
+	}
+	
+	public double getCenter() {
+		return (this.start + this.end) / 2.0;
+	}
 }

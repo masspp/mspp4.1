@@ -9,6 +9,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
+import javafx.scene.Cursor;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -43,6 +44,8 @@ public class ProfileCanvas extends CanvasBase {
 	
 	protected Point startPoint;
 	protected Point currentPoint;
+	protected RealMatrix startMatrix;
+
 
 	public ProfileCanvas() {
 		this.data = null;
@@ -72,6 +75,13 @@ public class ProfileCanvas extends CanvasBase {
 		this.addEventHandler(
 			MouseEvent.MOUSE_DRAGGED,
 			(event) -> {
+				me.onMouseDragged(event);
+			}
+		);
+		
+		this.addEventHandler(
+			MouseEvent.MOUSE_MOVED,
+			(event) -> {
 				me.onMouseMoved(event);
 			}
 		);
@@ -95,16 +105,96 @@ public class ProfileCanvas extends CanvasBase {
         double x = event.getX();
         double y = event.getY();
         
+        double width = this.getWidth();
+        double height = this.getHeight();
+        
+		if (x >= this.margin.getLeft() && x <= width - this.margin.getRight() && y >= height - this.margin.getBottom()) {
+			if(!this.xRanges.isEmpty()) {
+				this.startMatrix = this.matrix;
+			    Range range = new Range(this.xRanges.peek().getStart(), this.xRanges.peek().getEnd());
+			    this.xRanges.push(range);
+			}
+		}
+		else {
+			this.startMatrix = null;
+		}
+        
         this.startPoint = new Point(x, y);
     }
 	
-	protected void onMouseMoved(MouseEvent event) {
+	protected void onMouseDragged(MouseEvent event) {
 		if(this.startPoint != null) {
 			double x = event.getX();
 			double y = event.getY();
+			double width = this.getWidth();
+			double height = this.getHeight();
 			this.currentPoint = new Point(x, y);
 			
+			if (this.startPoint.getX() >= this.margin.getLeft()
+					&& this.startPoint.getX() <= width - this.margin.getRight()
+					&& this.startPoint.getY() >= height - this.margin.getBottom()) {
+				if (this.startMatrix != null) {
+					this.xRanges.pop();
+					double center = this.xRanges.peek().getCenter();
+					double length = this.xRanges.peek().getLength();
+					
+					RealMatrix inverse = MatrixUtils.inverse(this.startMatrix);
+					
+					double[] prevX = {this.startPoint.getX(), 0.0, 1.0};
+					double prevDataX = inverse.operate(prevX)[0];
+										
+					double[] currentX = {x, 0.0, 1.0};
+					double currentDataX = inverse.operate(currentX)[0];
+					
+					double dx = currentDataX - prevDataX;
+					double start = center - length / 2.0 - dx;
+					double end = center + length / 2.0 - dx;
+					
+					double minX = this.data.getPoints(0).get(0).getX();
+					double maxX = this.data.getPoints(0).get(this.data.getPoints(0).size() - 1).getX();
+					
+					if (start < minX) {
+						start = minX;
+						end = start + length;
+					}
+					else if (end > maxX) {
+						end = maxX;
+						start = end - length;
+					}
+					
+					Range range = new Range(start, end);
+					this.xRanges.push(range);
+				}
+			}
+			
 			this.draw();
+		}
+	}
+	
+	protected void onMouseMoved(MouseEvent event) {
+		double width = this.getWidth();
+		double height = this.getHeight();
+		double x = event.getX();
+		double y = event.getY();
+		
+		if(this.margin == null) {
+			this.setCursor(Cursor.DEFAULT);
+		}
+		else {
+			if (x < this.margin.getLeft() || x > width - this.margin.getRight() || y < this.margin.getTop() ) {
+				this.setCursor(Cursor.DEFAULT);
+			}
+			else if (y > height - this.margin.getBottom()) {
+				if(this.xRanges.isEmpty()) {
+					this.setCursor(Cursor.DEFAULT);
+				}
+				else {
+					this.setCursor(Cursor.OPEN_HAND);
+				}
+			}
+			else {
+				this.setCursor(Cursor.H_RESIZE);
+			}
 		}
 	}
 	
@@ -142,6 +232,7 @@ public class ProfileCanvas extends CanvasBase {
 		}
 		this.startPoint = null;
 		this.currentPoint = null;
+		this.startMatrix = null;
 		this.draw();
 	}
 	
