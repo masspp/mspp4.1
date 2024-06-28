@@ -10,6 +10,7 @@ import ninja.mspp.core.annotation.clazz.Listener;
 import ninja.mspp.core.annotation.method.MenuAction;
 import ninja.mspp.core.annotation.parameter.ActiveSample;
 import ninja.mspp.core.model.ms.Sample;
+import ninja.mspp.core.view.ViewInfo;
 
 @Listener("Peak Filter")
 public class PeakFilterListener {
@@ -26,7 +27,9 @@ public class PeakFilterListener {
 			alert.showAndWait();
 		}
 		else {
-			manager.showDialog(PeakFilterDialog.class, "PeakFilterDialog.fxml");
+			ViewInfo<PeakFilterDialog> viewInfo
+				= manager.showDialog(PeakFilterDialog.class, "PeakFilterDialog.fxml");
+			viewInfo.getController().setSample(sample);
 		}
 	}
 }

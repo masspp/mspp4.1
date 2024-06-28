@@ -27,10 +27,14 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import ninja.mspp.MsppManager;
+import ninja.mspp.core.model.ms.Sample;
+import ninja.mspp.operation.peak_filter.model.HitPeak;
 import ninja.mspp.operation.peak_filter.model.entity.FilterPeak;
 import ninja.mspp.operation.peak_filter.model.entity.FilterPeakSet;
 
 public class PeakFilterDialog implements Initializable {
+	private Sample sample;
+	
 	@FXML
 	private TableView<FilterPeak> table;
 	
@@ -98,6 +102,14 @@ public class PeakFilterDialog implements Initializable {
 		}
 	}
 	
+	public void setSample(Sample sample) {
+		this.sample = sample;
+	}
+	
+	public Sample getSample() {
+		return this.sample;
+	}
+	
 	@FXML
 	private void onDeletePeak(ActionEvent event) {
 		FilterPeak peak = this.table.getSelectionModel().getSelectedItem();
@@ -106,6 +118,21 @@ public class PeakFilterDialog implements Initializable {
 	
 	@FXML
 	private void onSearch(ActionEvent event) throws IOException {
+		PeakFilterManager manager = PeakFilterManager.getInstance();
+		
+		List<FilterPeak> peaks = new ArrayList<FilterPeak>();
+		for (FilterPeak peak : this.table.getItems()) {
+			peaks.add(peak);
+		}
+		System.out.println(peaks);
+		
+		double tolerance = Double.parseDouble(this.toleranceText.getText());
+		double threshold = Double.parseDouble(this.thresholdText.getText());
+		String unit = this.unitChoice.getSelectionModel().getSelectedItem();		
+		List<HitPeak> result = manager.searchPeaks(this.sample, peaks, tolerance, threshold, unit);
+		System.out.println(result);
+		
+		manager.openResultDialog(peaks, result);
 	}
 	
 	@FXML
@@ -252,7 +279,7 @@ public class PeakFilterDialog implements Initializable {
 					protected void updateItem(Double mz, boolean empty) {
 						super.updateItem(mz, empty);
                         if(!empty && mz != null) {
-							String text = String.format("%.2f",  mz);
+							String text = String.format("%.4f",  mz);
 							setText(text);
 							setAlignment(Pos.CENTER_RIGHT);
 						}
@@ -307,21 +334,6 @@ public class PeakFilterDialog implements Initializable {
 				return cell;
 			}
 		);
-		
-/*		
-		this.table.getItems().add(
-			new PeakInfo("phosphocholine, C5H15NO4P", 184.07, Color.AQUA, false)
-	    );
-		this.table.getItems().add(
-			new PeakInfo("C5H13NO3P", 166.06, Color.LIME, false)
-		);
-		this.table.getItems().add(
-			new PeakInfo("C2H6O4P", 125.00, Color.MAGENTA, false)
-		);
-		this.table.getItems().add(
-			new PeakInfo("C5H14NO", 104.11, Color.ORANGE, false)
-		);
-*/								
 	}
 	
 	private void createSetChoice() {

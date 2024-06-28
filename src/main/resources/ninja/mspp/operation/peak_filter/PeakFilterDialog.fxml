@@ -15,6 +15,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.paint.Color?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ninja.mspp.operation.peak_filter.PeakFilterDialog">
    <opaqueInsets>
@@ -30,12 +31,12 @@
                         <GridPane prefHeight="50.0">
                           <columnConstraints>
                               <ColumnConstraints hgrow="SOMETIMES" maxWidth="80.0" minWidth="10.0" prefWidth="47.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="138.0" minWidth="10.0" prefWidth="119.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="84.0" minWidth="10.0" prefWidth="39.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="144.0" minWidth="10.0" prefWidth="98.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="93.0" minWidth="10.0" prefWidth="48.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="182.0" minWidth="10.0" prefWidth="116.0" />
-                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="123.0" minWidth="10.0" prefWidth="122.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="186.0" minWidth="10.0" prefWidth="181.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="40.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="144.0" minWidth="10.0" prefWidth="88.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="104.0" minWidth="10.0" prefWidth="47.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="182.0" minWidth="10.0" prefWidth="68.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="123.0" minWidth="10.0" prefWidth="118.0" />
                           </columnConstraints>
                           <rowConstraints>
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -66,10 +67,13 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </Label>
-                              <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="104.0" GridPane.columnIndex="5">
+                              <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="56.0" GridPane.columnIndex="5">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
+                                 <value>
+                                    <Color />
+                                 </value>
                               </ColorPicker>
                               <CheckBox fx:id="neutralLossCheck" mnemonicParsing="false" prefHeight="18.0" prefWidth="101.0" text="Neutral Loss" GridPane.columnIndex="6">
                                  <GridPane.margin>
@@ -155,10 +159,10 @@
    <center>
       <TableView fx:id="table" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <columns>
-          <TableColumn fx:id="nameColumn" prefWidth="255.0" text="Name" />
-          <TableColumn fx:id="mzColumn" minWidth="4.0" prefWidth="134.0" text="m/z" />
-            <TableColumn fx:id="colorColumn" minWidth="0.0" prefWidth="109.0" text="Color" />
-            <TableColumn fx:id="neutralLossColumn" prefWidth="99.0" text="Neutral Loss" />
+          <TableColumn fx:id="nameColumn" prefWidth="370.0" text="Name" />
+          <TableColumn fx:id="mzColumn" minWidth="4.0" prefWidth="100.0" text="m/z" />
+            <TableColumn fx:id="neutralLossColumn" prefWidth="75.0" text="Neutral Loss" />
+            <TableColumn fx:id="colorColumn" minWidth="0.0" prefWidth="50.0" text="Color" />
         </columns>
       </TableView>
    </center>

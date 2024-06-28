@@ -1,6 +1,9 @@
 package ninja.mspp.operation.peak_filter;
 
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -8,14 +11,24 @@ import java.util.ResourceBundle;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextInputDialog;
 import ninja.mspp.MsppManager;
+import ninja.mspp.core.model.ms.DataPoints;
+import ninja.mspp.core.model.ms.Point;
+import ninja.mspp.core.model.ms.Sample;
+import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.view.ViewInfo;
+import ninja.mspp.operation.peak_filter.model.HitPeak;
 import ninja.mspp.operation.peak_filter.model.entity.FilterPeak;
 import ninja.mspp.operation.peak_filter.model.entity.FilterPeakSet;
 
 public class PeakFilterManager {
 	private static PeakFilterManager instance;
 	public static final String SET_KEY = "PEAK_FILTER_SET";
+	
+	private ViewInfo<PeakFilterDialog> activeDialog;
 	
 	private PeakFilterManager() {
 	}
@@ -118,6 +131,120 @@ public class PeakFilterManager {
 		}
 		
 		return set;
+	}
+	
+	
+	private double getIntensityThreshold(DataPoints points, double threshold, String unit) {
+		double intensityThreshold = threshold;
+		if(unit.equals("%")) {
+			double maxIntensity = 1.0;
+			for (Point point : points) {
+				if (point.getY() > maxIntensity) {
+					maxIntensity = point.getY();
+				}
+			}
+			intensityThreshold = maxIntensity * threshold / 100.0;
+		}
+		return intensityThreshold;
+	}
+	
+	
+	private Point searchPeak(DataPoints points, FilterPeak peak, double tolerance, double intensityThreshold) {
+		Point result = null;
+		double mz = peak.getMz();
+		double minMz = mz - tolerance;
+		double maxMz = mz + tolerance;
+		double maxIntensity = 0.0;
+		
+		int startIndex = Collections.binarySearch(points, new Point(minMz, 0.0));
+		if(startIndex < 0) {
+			startIndex = - startIndex - 1;
+		}
+		int endIndex = Collections.binarySearch(points, new Point(maxMz, 0.0));
+		if (endIndex < 0) {
+			endIndex = - endIndex - 2;
+		}
+		
+		for (int i = startIndex; i <= endIndex; i++) {
+			Point point = points.get(i);
+			if (point.getY() >= intensityThreshold) {
+				if (point.getY() > maxIntensity) {
+					maxIntensity = point.getY();
+					result = point;
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	
+	public List<HitPeak> searchPeaks(Sample sample, List<FilterPeak> peaks, double tolerance, double threshold, String unit) {
+		List<HitPeak> result = new ArrayList<HitPeak>();
+		
+		for(Spectrum spectrum : sample.getSpectra()) {
+			if(spectrum.getMsLevel() >= 2) {
+				System.out.println("Searching..." + spectrum.getTitle());
+				DataPoints points = spectrum.readDataPoints();
+				HitPeak hitPeak = null;
+				double intensityThreshold = getIntensityThreshold(points, threshold, unit);
+				for (FilterPeak peak : peaks) {
+					Point point = this.searchPeak(points, peak , tolerance, intensityThreshold);
+					if(point != null) {
+						if(hitPeak == null) {
+							hitPeak = new HitPeak(spectrum);
+						}
+						hitPeak.getHitMap().put(peak, point.getY());
+					}
+				}
+				if(hitPeak != null) {
+					result.add(hitPeak);
+				}
+			}
+		}
+		
+		return result;
+	}
+
+	
+	public void openResultDialog(List<FilterPeak> peaks, List<HitPeak> result) throws IOException {
+		MsppManager manager = MsppManager.getInstance();
+		ViewInfo<ResultDialog> viewInfo = manager.showDialog(ResultDialog.class, "ResultDialog.fxml");
+		ResultDialog dialog = viewInfo.getController();
+		dialog.setResult(peaks, result);
+	}
+	
+	public void openDialog(Sample sample) throws IOException {
+		MsppManager manager = MsppManager.getInstance();
+		ViewInfo<PeakFilterDialog> viewInfo = manager.showDialog(PeakFilterDialog.class, "PeakFilterDialog.fxml");
+		PeakFilterDialog dialog = viewInfo.getController();
+		dialog.setSample(sample);
+		this.activeDialog = viewInfo;
+	}
+	
+	public void setActiveDialog(ViewInfo<PeakFilterDialog> dialog) {
+		this.activeDialog = dialog;
+	}
+	
+	
+	public ViewInfo<PeakFilterDialog> getActiveDialog() throws IOException {
+		MsppManager manager = MsppManager.getInstance();
+		
+		if (this.activeDialog == null) {
+			Sample sample = manager.getActiveSample();
+			if(sample == null) {
+				Alert alert = new Alert(AlertType.ERROR);
+				ResourceBundle messages = manager.getMessages();
+				alert.setTitle("Error");
+				alert.setHeaderText(messages.getString("sample.not_selected.title"));
+				alert.setContentText(messages.getString("sample.not_selected.content"));
+				alert.showAndWait();
+			}
+			else {
+				this.openDialog(sample);
+			}
+		}
+		return this.activeDialog;
 	}
 
 	
