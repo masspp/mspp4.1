@@ -30,6 +30,15 @@ public class NormalViewModeManager {
 		this.chromatogramCanvas = chromatogramCanvas;
 	}
 	
+	public void refresh() {
+		if (this.spectrumCanvas != null) {
+			this.spectrumCanvas.refresh();
+		}
+		if (this.chromatogramCanvas != null) {
+			this.chromatogramCanvas.refresh();
+		}
+	}
+	
 	public static NormalViewModeManager getInstance() {
 		if (instance == null) {
 			instance = new NormalViewModeManager();

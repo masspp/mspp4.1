@@ -32,10 +32,15 @@ public class ResultDialog implements Initializable {
 	
 	@FXML
 	public void onClose(ActionEvent event) {
+		PeakFilterManager manager = PeakFilterManager.getInstance();
+		
 		Button button = (Button)event.getSource();
 		Scene scene = button.getScene();
 		Stage stage = (Stage)scene.getWindow();
 		stage.close();
+		
+		manager.unsetResult();
+		manager.setDrawingFlag(false);
 	}
 
 	@Override
@@ -145,6 +150,13 @@ public class ResultDialog implements Initializable {
 				}
 			}
 		);
+		
+		PeakFilterManager peakFilterManager = PeakFilterManager.getInstance();
+		this.drawCheck.selectedProperty().addListener(
+			(observable, oldValue, newValue) -> {
+				peakFilterManager.setDrawingFlag(newValue);
+			}
+		);
 	}
 	
 	public void setResult(List<FilterPeak> peaks, List<HitPeak> result) {
@@ -186,6 +198,9 @@ public class ResultDialog implements Initializable {
 		
 		for(HitPeak hit : result) {
 			this.table.getItems().add(hit);
-		}		
+		}	
+		
+		PeakFilterManager manager = PeakFilterManager.getInstance();
+		manager.setDrawingFlag(this.drawCheck.isSelected());
 	}
 }

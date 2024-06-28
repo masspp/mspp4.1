@@ -5,32 +5,55 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import org.apache.commons.math3.linear.RealMatrix;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import ninja.mspp.MsppManager;
+import ninja.mspp.core.annotation.method.Refresh;
 import ninja.mspp.core.model.ms.DataPoints;
 import ninja.mspp.core.model.ms.Point;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.view.DrawInfo;
 import ninja.mspp.core.view.ViewInfo;
 import ninja.mspp.operation.peak_filter.model.HitPeak;
 import ninja.mspp.operation.peak_filter.model.entity.FilterPeak;
 import ninja.mspp.operation.peak_filter.model.entity.FilterPeakSet;
+import ninja.mspp.view.panel.model.Range;
 
 public class PeakFilterManager {
 	private static PeakFilterManager instance;
+	
 	public static final String SET_KEY = "PEAK_FILTER_SET";
+	private static final int LABEL_MARGIN = 5; 
 	
 	private ViewInfo<PeakFilterDialog> activeDialog;
+	private boolean drawingLabel;
+	private List<FilterPeak> peaks;
+	private List<HitPeak> result;
+	
+	class LabelPosition {
+		double left;
+		double right;
+		int level;
+	};
 	
 	private PeakFilterManager() {
+		this.drawingLabel = true;
+		this.peaks = null;
+		this.result = null;
 	}
 	
 	public List<FilterPeakSet> getFilterPeakSets() {
@@ -184,7 +207,6 @@ public class PeakFilterManager {
 		
 		for(Spectrum spectrum : sample.getSpectra()) {
 			if(spectrum.getMsLevel() >= 2) {
-				System.out.println("Searching..." + spectrum.getTitle());
 				DataPoints points = spectrum.readDataPoints();
 				HitPeak hitPeak = null;
 				double intensityThreshold = getIntensityThreshold(points, threshold, unit);
@@ -208,15 +230,22 @@ public class PeakFilterManager {
 
 	
 	public void openResultDialog(List<FilterPeak> peaks, List<HitPeak> result) throws IOException {
+		this.peaks = peaks;
+		this.result = result;
 		MsppManager manager = MsppManager.getInstance();
-		ViewInfo<ResultDialog> viewInfo = manager.showDialog(ResultDialog.class, "ResultDialog.fxml");
+		ViewInfo<ResultDialog> viewInfo = manager.showDialog(ResultDialog.class, "ResultDialog.fxml", "Peak Filter Result");
 		ResultDialog dialog = viewInfo.getController();
-		dialog.setResult(peaks, result);
+		dialog.setResult(peaks, result);				
+	}
+	
+	public void unsetResult() {
+		this.peaks = null;
+		this.result = null;
 	}
 	
 	public void openDialog(Sample sample) throws IOException {
 		MsppManager manager = MsppManager.getInstance();
-		ViewInfo<PeakFilterDialog> viewInfo = manager.showDialog(PeakFilterDialog.class, "PeakFilterDialog.fxml");
+		ViewInfo<PeakFilterDialog> viewInfo = manager.showDialog(PeakFilterDialog.class, "PeakFilterDialog.fxml", "Peak Filter");
 		PeakFilterDialog dialog = viewInfo.getController();
 		dialog.setSample(sample);
 		this.activeDialog = viewInfo;
@@ -245,6 +274,125 @@ public class PeakFilterManager {
 			}
 		}
 		return this.activeDialog;
+	}
+	
+	
+	public void setDrawingFlag(boolean drawing) {
+		this.drawingLabel = drawing;
+		
+		MsppManager manager = MsppManager.getInstance();
+		manager.invoke(Refresh.class);
+	}
+	
+	private HitPeak searchHit(Spectrum spectrum) {
+		HitPeak result = null;
+		if(this.result != null) {
+			for(HitPeak peak : this.result) {
+				if(peak.getSpectrum() == spectrum) {
+					result = peak;
+				}
+			}
+		}
+		return result;
+	}
+	
+	
+	protected int searchLevel(List<LabelPosition> positions, double left, double right) {
+		int level = 1;
+		boolean loop = true;
+		while(loop) {
+			boolean found = false;
+			for (LabelPosition position : positions) {
+				if(position.level == level) {
+					if(left <= position.right && right >= position.left) {
+						found = true;
+					}
+				}
+			}
+			
+			if(found) {
+				level++;
+			}
+			else {
+				loop = false;
+			}
+		}
+		
+		return level;
+	}
+	
+	
+	protected void drawLabel(DrawInfo<Spectrum> drawInfo, List<FilterPeak> peaks) {
+		Range xRange = drawInfo.getXRange();
+		RealMatrix matrix = drawInfo.getMatrix();
+		GraphicsContext gc = drawInfo.getContext();
+		
+		Font font = new Font("Monospaced", 12);
+		
+		List<LabelPosition> positions = new ArrayList<LabelPosition>();
+				
+		for(FilterPeak peak : peaks) {
+			Color color = Color.web(peak.getColor());
+			double mz = peak.getMz();
+			String name = peak.getName();
+			if(xRange.contains(mz)) {
+				double[] data = {mz, 0.0, 1.0};
+				double px = matrix.operate(data)[0];
+				Text text = new Text(name);
+				text.setFont(font);
+				
+				double textWidth = text.getLayoutBounds().getWidth();
+				double textHeight = text.getLayoutBounds().getHeight();
+				
+				double textPx = px - textWidth / 2.0;
+				
+				if(textPx < drawInfo.left()) {
+					textPx = drawInfo.left();
+				}
+				if(textPx + textWidth > drawInfo.right()) {
+                    textPx = drawInfo.right() - textWidth;
+                }
+				
+				gc.setFill(color);
+				gc.setStroke(color);
+				text.setStroke(color);
+				text.setFill(color);
+				
+				int level = this.searchLevel(positions, textPx, textPx + textWidth);
+				LabelPosition position = new LabelPosition();
+				position.left = textPx;
+				position.right = textPx + textWidth;
+				position.level = level;
+				positions.add(position);
+				
+				gc.setLineDashes(1.0, 3.0);
+				gc.strokeLine(px, drawInfo.bottom(), px, drawInfo.top() + LABEL_MARGIN + textHeight * (double)(level + 1));
+
+				gc.setLineDashes(null);
+				gc.strokeText(name, textPx, drawInfo.top() + LABEL_MARGIN + textHeight * (double)level);
+			}
+		}
+	}
+	
+	
+	public void drawLabel(DrawInfo<Spectrum> drawInfo) {
+		if (this.drawingLabel) {
+			HitPeak hit = this.searchHit(drawInfo.getObject());
+			if(hit != null) {
+				Map<FilterPeak, Double> map = hit.getHitMap();
+				if(map != null) {
+					List<FilterPeak> peaks = new ArrayList<FilterPeak>();
+					for(FilterPeak peak : this.peaks) {
+						if(map.containsKey(peak)) {
+							peaks.add(peak);
+						}
+					}
+					if(peaks.size() > 0) {
+						drawLabel(drawInfo, peaks);
+					}
+				}
+			}
+		}
 	}
 
 	

@@ -7,6 +7,7 @@ import ninja.mspp.MsppManager;
 import ninja.mspp.core.annotation.clazz.Listener;
 import ninja.mspp.core.annotation.method.OnSelectChromatogram;
 import ninja.mspp.core.annotation.method.OnSelectSpectrum;
+import ninja.mspp.core.annotation.method.Refresh;
 import ninja.mspp.core.annotation.method.ViewMode;
 import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.Spectrum;
@@ -50,4 +51,15 @@ public class NormalViewListener {
 			}
 		}
 	}
+	
+	@Refresh
+	public void refresh() {
+		MsppManager manager = MsppManager.getInstance();
+		String viewMode = manager.getStatus("VIEW_MODE");
+		if (viewMode.equals("Normal")) {
+			NormalViewModeManager modeManager = NormalViewModeManager.getInstance();
+			modeManager.refresh();
+		}
+	}
+	
 }

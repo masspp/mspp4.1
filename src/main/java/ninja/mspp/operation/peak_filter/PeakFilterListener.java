@@ -8,8 +8,11 @@ import javafx.scene.control.Alert.AlertType;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.annotation.clazz.Listener;
 import ninja.mspp.core.annotation.method.MenuAction;
+import ninja.mspp.core.annotation.method.SpectrumCanvasForeground;
 import ninja.mspp.core.annotation.parameter.ActiveSample;
 import ninja.mspp.core.model.ms.Sample;
+import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.view.DrawInfo;
 import ninja.mspp.core.view.ViewInfo;
 
 @Listener("Peak Filter")
@@ -28,8 +31,14 @@ public class PeakFilterListener {
 		}
 		else {
 			ViewInfo<PeakFilterDialog> viewInfo
-				= manager.showDialog(PeakFilterDialog.class, "PeakFilterDialog.fxml");
+				= manager.showDialog(PeakFilterDialog.class, "PeakFilterDialog.fxml", "Peak Filter");
 			viewInfo.getController().setSample(sample);
 		}
+	}
+	
+	@SpectrumCanvasForeground
+	public void drawLabel(DrawInfo<Spectrum> info) {
+		PeakFilterManager manager = PeakFilterManager.getInstance();
+		manager.drawLabel(info);
 	}
 }

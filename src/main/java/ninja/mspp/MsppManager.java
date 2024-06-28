@@ -135,13 +135,14 @@ public class MsppManager {
 		return new ViewInfo<T>(root, controller);
 	}
 	
-	public <T> ViewInfo<T> showDialog(Class<T> clazz, String fxml) throws IOException {
+	public <T> ViewInfo<T> showDialog(Class<T> clazz, String fxml, String title) throws IOException {
 		ViewInfo<T> info = this.createWindow(clazz, fxml);
 		
 		Stage stage = new Stage();
 		stage.initOwner(this.mainStage);
 		Scene scene = new Scene(info.getWindow());
 		stage.setScene(scene);
+		stage.setTitle(title);
 		stage.show();
 		
 		return info;

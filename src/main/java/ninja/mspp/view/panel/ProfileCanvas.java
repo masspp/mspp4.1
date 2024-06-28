@@ -29,6 +29,7 @@ public class ProfileCanvas extends CanvasBase {
 	protected static final int TICK_LENGTH = 5;
 
 	protected DrawingData data;
+	protected DataPoints points;
 
 	protected Stack<Range> xRanges;
 	protected Stack<Range> yRanges;
@@ -256,8 +257,9 @@ public class ProfileCanvas extends CanvasBase {
 
 	public void setPoints(DataPoints points) {
 		this.data = new DrawingData(points);
+		this.points = points;
 		this.xRanges.clear();
-		this.yRanges.clear();
+		this.yRanges.clear();		
 		this.draw();
 	}
 
@@ -582,7 +584,7 @@ public class ProfileCanvas extends CanvasBase {
 		}
 	}
 	
-	protected void drawBackground(GraphicsContext gc, RealMatrix matrix, double width, double height, Bounds margin,
+	protected void drawMouseBackground(GraphicsContext gc, RealMatrix matrix, double width, double height, Bounds margin,
 			Point startPoint, Point currentPoint) {		
 		if (startPoint != null && currentPoint != null) {
 			if (startPoint.getY() >= margin.getTop() && startPoint.getX() >= margin.getLeft() && startPoint.getX() <= width - margin.getRight()) {
@@ -608,6 +610,16 @@ public class ProfileCanvas extends CanvasBase {
 			}
 		}
 	}
+	
+	public void refresh() {
+		this.draw();
+	}
+	
+	protected void drawForeground(GraphicsContext gc, double width, double height, Bounds margin, RealMatrix matrix, Range xRange, Range yRange) {
+	}
+	
+	protected void drawBackground(GraphicsContext gc, double width, double height, Bounds margin, RealMatrix matrix, Range xRange, Range yRange) {
+	}
 
 	@Override
 	protected void onDraw(GraphicsContext gc, double width, double height) {
@@ -629,8 +641,10 @@ public class ProfileCanvas extends CanvasBase {
 			int level = this.data.calculateLevel(width, xRange.getStart(), xRange.getEnd());
 			List<DrawingPoint> points = this.data.getPoints(level);
 		
-			drawBackground(gc, matrix, width, height, margin, this.startPoint, this.currentPoint);
+			drawMouseBackground(gc, matrix, width, height, margin, this.startPoint, this.currentPoint);
+			drawBackground(gc, width, height, margin, matrix, xRange, yRange);
 			drawProfile(gc, matrix, width, height, margin, points);
+			drawForeground(gc, width, height, margin, matrix, xRange, yRange);
 			drawRect(gc, margin, width, height);
 			drawXAxis(gc, xTicks, xLabels, matrix, margin, width, height);
 			drawYAxis(gc, yTicks, yLabels, matrix, margin, width, height);
