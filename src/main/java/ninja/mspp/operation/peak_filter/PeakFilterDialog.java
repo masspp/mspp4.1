@@ -397,4 +397,11 @@ public class PeakFilterDialog implements Initializable {
 		this.toleranceText.setText("0.01");
 		this.thresholdText.setText("1");
 	}
+
+	public void setInformation(String name, String mz, String color, boolean neutralLoss) {
+		this.nameText.setText(name);
+		this.mzText.setText(mz);
+		this.colorPicker.setValue(color == null ? Color.BLACK : Color.web(color));
+		this.neutralLossCheck.setSelected(neutralLoss);
+	}
 }
