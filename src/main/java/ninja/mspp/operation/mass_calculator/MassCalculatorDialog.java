@@ -3,6 +3,11 @@ package ninja.mspp.operation.mass_calculator;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
+import org.glycoinfo.ms.GlycanMassUtility.dict.molecule.NeutralType;
+import org.glycoinfo.ms.GlycanMassUtility.om.IMassElement;
+import org.glycoinfo.ms.GlycanMassUtility.om.IonCloud;
+import org.glycoinfo.ms.GlycanMassUtility.om.Molecule;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,9 +24,9 @@ import javafx.scene.control.ToggleGroup;
 import javafx.stage.Stage;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.model.ms.Sample;
-import ninja.mspp.operation.mass_calculator.model.IMassCalculator;
-import ninja.mspp.operation.mass_calculator.model.MassCalculatorFactory;
-import ninja.mspp.operation.mass_calculator.model.MassCalculatorType;
+import ninja.mspp.operation.mass_calculator.model.mass.CompoundCreator;
+import ninja.mspp.operation.mass_calculator.model.mass.CompoundType;
+import ninja.mspp.operation.mass_calculator.model.mass.MassCalculator;
 import ninja.mspp.operation.peak_filter.PeakFilterDialog;
 
 public class MassCalculatorDialog {
@@ -71,9 +76,9 @@ public class MassCalculatorDialog {
 	private void initialize() {
 		// Add items to ChoiceBox
 		typeChoiceBox.getItems().addAll(
-				"Chemical composition",
-				"Peptide/protain sequence",
-				"Glycan composition"
+				CompoundType.CHEMICAL_COMPOSITION.getName(),
+				CompoundType.PEPTIDE.getName(),
+				CompoundType.GLYCAN_COMPOSITION.getName()
 			);
 		typeChoiceBox.getSelectionModel().selectFirst();
 		updateEgLabel();
@@ -97,17 +102,9 @@ public class MassCalculatorDialog {
 	}
 
 	private void updateEgLabel() {
-		switch (getSelectedType()) {
-		case CHEMICAL_COMPOSITION:
-			egLabel.setText("e.g. C6H12O6");
-			break;
-		case PEPTIDE:
-			egLabel.setText("e.g. PEPTIDE");
-			break;
-		case GLYCAN_COMPOSITION:
-			egLabel.setText("e.g. HexNAc(2)Hex(3)");
-			break;
-		}
+		egLabel.setText("");
+		if (getSelectedType() != null)
+			egLabel.setText("e.g. " + getSelectedType().getEg());
 	}
 
 	private void reset() {
@@ -127,7 +124,7 @@ public class MassCalculatorDialog {
 
 		updateEgLabel();
 
-		MassCalculatorType type = getSelectedType();
+		CompoundType type = getSelectedType();
 		String name = nameField.getText();
 		if (name.isEmpty()) {
 			massField.clear();
@@ -135,26 +132,28 @@ public class MassCalculatorDialog {
 			return;
 		}
 
-		String ion = getSelectedIon();
-
-		String waterLoss = watLossCheckBox.isSelected() ? "H2O" : null;
-
 		// Calculate mass and mz
-		IMassCalculator calc = MassCalculatorFactory.createMassCalculator(type);
-		// validate input
-		String error = calc.validate(name);
-		if (error != null) {
-			warningLabel.setText(error);
+		MassCalculator calc = new MassCalculator();
+		try {
+			IMassElement compound = CompoundCreator.create(name, type);
+			calc.addCompound(compound);
+
+			IonCloud ionCloud = IonCloud.parse( getSelectedIon() );
+
+			Molecule waterLoss = null;
+			if ( watLossCheckBox.isSelected() )
+				waterLoss = NeutralType.Water.getMolecule();
+
+			// Display mass and mz
+			massField.setText(String.valueOf(calc.computeMass()));
+			mzField.setText(String.valueOf(calc.computeMz(ionCloud, waterLoss)));
+		} catch (IllegalArgumentException e) {
+			// handle invalid input
+			warningLabel.setText(e.getMessage());
 			massField.clear();
 			mzField.clear();
 			return;
 		}
-		double mass = calc.computeMass(name);
-		double mz = calc.computeMz(name, ion, waterLoss);
-
-		// Display mass and mz
-		massField.setText(String.valueOf(mass));
-		mzField.setText(String.valueOf(mz));
 	}
 
 	@FXML
@@ -206,16 +205,8 @@ public class MassCalculatorDialog {
 		reset();
 	}
 
-	private MassCalculatorType getSelectedType() {
-		switch (typeChoiceBox.getValue()) {
-		case "Chemical composition":
-			return MassCalculatorType.CHEMICAL_COMPOSITION;
-		case "Peptide/protain sequence":
-			return MassCalculatorType.PEPTIDE;
-		case "Glycan composition":
-			return MassCalculatorType.GLYCAN_COMPOSITION;
-		}
-		return null;
+	private CompoundType getSelectedType() {
+		return CompoundType.fromName(typeChoiceBox.getValue());
 	}
 
 	private String getSelectedIon() {
