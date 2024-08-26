@@ -17,14 +17,15 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import ninja.mspp.core.model.ms.DataPoints;
 import ninja.mspp.core.model.ms.Point;
-import ninja.mspp.view.panel.model.Bounds;
-import ninja.mspp.view.panel.model.DrawingData;
-import ninja.mspp.view.panel.model.DrawingPoint;
-import ninja.mspp.view.panel.model.Line;
-import ninja.mspp.view.panel.model.Range;
+import ninja.mspp.core.model.view.Bounds;
+import ninja.mspp.core.model.view.DrawingData;
+import ninja.mspp.core.model.view.DrawingPoint;
+import ninja.mspp.core.model.view.Line;
+import ninja.mspp.core.model.view.Range;
 
 public class ProfileCanvas extends CanvasBase {
-	protected static final int MARGIN = 10;
+	protected static final int GRAPH_MARGIN = 30;
+	protected static final int TITLE_MARGIN = 5;
 	protected static final int TICK_PARAMETER = 8;
 	protected static final int TICK_LENGTH = 5;
 
@@ -46,9 +47,12 @@ public class ProfileCanvas extends CanvasBase {
 	protected Point startPoint;
 	protected Point currentPoint;
 	protected RealMatrix startMatrix;
+	
+	protected String xTitle;
+	protected String yTitle;
 
 
-	public ProfileCanvas() {
+	public ProfileCanvas(String xTitle, String yTitle) {
 		this.data = null;
 		this.xRanges = new Stack<Range>();
 		this.yRanges = new Stack<Range>();
@@ -57,6 +61,9 @@ public class ProfileCanvas extends CanvasBase {
 		this.impulseMode = false;
 		this.matrix = null;
 		this.margin = null;
+		
+		this.xTitle = xTitle;
+		this.yTitle = yTitle;
 		
 		this.startPoint = null;
 		this.currentPoint = null;
@@ -283,7 +290,7 @@ public class ProfileCanvas extends CanvasBase {
 		this.draw();
 	}
 
-	private Range getXRange() {
+	protected Range getXRange() {
 		double start = 0.0;
 		double end = 0.0;
 
@@ -305,7 +312,7 @@ public class ProfileCanvas extends CanvasBase {
 		return new Range(start, end);
 	}
 	
-	private Range getYRange() {
+	protected Range getYRange() {
 		double start = 0.0;
 		double end = 0.0;
 
@@ -345,7 +352,7 @@ public class ProfileCanvas extends CanvasBase {
 		return new Range(start, end);
 	}
 
-	private double[] getTicks(Range range) {
+	protected double[] getTicks(Range range) {
 		double unit = range.getLength() / (double) TICK_PARAMETER;
 		double log10 = Math.round(Math.log10(unit));
 		double scale = Math.pow(10.0, log10);
@@ -364,7 +371,7 @@ public class ProfileCanvas extends CanvasBase {
 		return ticks;
 	}
 
-	private String[] getTickLabels(double[] ticks) {
+	protected String[] getTickLabels(double[] ticks) {
 		double space = ticks[1] - ticks[0];
 		int log10 = (int) Math.floor(Math.log10(space));
 		String format = "%.0f";
@@ -379,29 +386,29 @@ public class ProfileCanvas extends CanvasBase {
 		return labels;
 	}
 	
-	private Bounds calculateMargin(String[] xLabels, String[] yLabels) {
-		int martinTop = MARGIN;
-		int marginBottom = MARGIN + TICK_LENGTH;
-		int marginLeft = MARGIN + TICK_LENGTH;
-		int marginRight = MARGIN;
+	protected Bounds calculateMargin(String[] xLabels, String[] yLabels) {
+		int martinTop = GRAPH_MARGIN;
+		int marginBottom = GRAPH_MARGIN + TICK_LENGTH;
+		int marginLeft = GRAPH_MARGIN + TICK_LENGTH;
+		int marginRight = GRAPH_MARGIN;
 
 		for (String xLabl : xLabels) {
 			Text text = new Text(xLabl);
 			text.setFont(this.font);
-			marginBottom = Math.max(marginBottom,  MARGIN + TICK_LENGTH + (int)text.getLayoutBounds().getHeight());
+			marginBottom = Math.max(marginBottom, GRAPH_MARGIN + TICK_LENGTH + (int)text.getLayoutBounds().getHeight());
 		}
 		
 		for (String yLabl : yLabels) {
 			Text text = new Text(yLabl);
 			text.setFont(this.font);
-			marginLeft = Math.max(marginLeft, MARGIN + TICK_LENGTH + (int)text.getLayoutBounds().getWidth());
+			marginLeft = Math.max(marginLeft, GRAPH_MARGIN + TICK_LENGTH + (int)text.getLayoutBounds().getWidth());
 		}
 		
 		Bounds margin = new Bounds(martinTop, marginRight, marginBottom, marginLeft);
 		return margin;		
 	}
 	
-	private RealMatrix calculateMatrix(double width, double height, Range xRange, Range yRange, Bounds margin) {
+	protected RealMatrix calculateMatrix(double width, double height, Range xRange, Range yRange, Bounds margin) {
 		RealMatrix dataMatrix = new Array2DRowRealMatrix(3, 3);
 		dataMatrix.setEntry(0, 0, xRange.getLength());
 		dataMatrix.setEntry(0,  1,  0.0);
@@ -624,30 +631,51 @@ public class ProfileCanvas extends CanvasBase {
 	@Override
 	protected void onDraw(GraphicsContext gc, double width, double height) {
 		if(this.data != null) {
-			gc.setFont(this.font);
-		
-			Range xRange = this.getXRange();
-			Range yRange = this.getYRange();
-			double[] xTicks = this.getTicks(xRange);
-			double[] yTicks = this.getTicks(yRange);
-			String[] xLabels = this.getTickLabels(xTicks);
-			String[] yLabels = this.getTickLabels(yTicks);
-		
-			Bounds margin = this.calculateMargin(xLabels, yLabels);
-			RealMatrix matrix = calculateMatrix(width, height, xRange, yRange, margin);
-			this.matrix = matrix;
-			this.margin = margin;
-		
-			int level = this.data.calculateLevel(width, xRange.getStart(), xRange.getEnd());
-			List<DrawingPoint> points = this.data.getPoints(level);
-		
-			drawMouseBackground(gc, matrix, width, height, margin, this.startPoint, this.currentPoint);
-			drawBackground(gc, width, height, margin, matrix, xRange, yRange);
-			drawProfile(gc, matrix, width, height, margin, points);
-			drawForeground(gc, width, height, margin, matrix, xRange, yRange);
-			drawRect(gc, margin, width, height);
-			drawXAxis(gc, xTicks, xLabels, matrix, margin, width, height);
-			drawYAxis(gc, yTicks, yLabels, matrix, margin, width, height);
+			drawData(gc, width, height);
 		}
+	}
+	
+	protected void drawTitles(GraphicsContext gc, double width, double height) {
+		gc.setFont(this.font);
+
+		Text text = new Text(this.xTitle);
+		text.setFont(this.font);
+		double textWidth = text.getLayoutBounds().getWidth();
+		double textHeight = text.getLayoutBounds().getHeight();		
+		gc.strokeText(this.xTitle, width - textWidth - TITLE_MARGIN, height - TITLE_MARGIN);
+			
+		text = new Text(this.yTitle);
+		text.setFont(this.font);
+		textWidth = text.getLayoutBounds().getWidth();
+		textHeight = text.getLayoutBounds().getHeight();
+		gc.strokeText(this.yTitle, TITLE_MARGIN, textHeight + TITLE_MARGIN);
+	}
+	
+	protected void drawData(GraphicsContext gc, double width, double height) {
+		gc.setFont(this.font);
+		
+		Range xRange = this.getXRange();
+		Range yRange = this.getYRange();
+		double[] xTicks = this.getTicks(xRange);
+		double[] yTicks = this.getTicks(yRange);
+		String[] xLabels = this.getTickLabels(xTicks);
+		String[] yLabels = this.getTickLabels(yTicks);
+
+		Bounds margin = this.calculateMargin(xLabels, yLabels);
+		RealMatrix matrix = calculateMatrix(width, height, xRange, yRange, margin);
+		this.matrix = matrix;
+		this.margin = margin;
+
+		int level = this.data.calculateLevel(width, xRange.getStart(), xRange.getEnd());
+		List<DrawingPoint> points = this.data.getPoints(level);
+
+		drawMouseBackground(gc, matrix, width, height, margin, this.startPoint, this.currentPoint);
+		drawBackground(gc, width, height, margin, matrix, xRange, yRange);
+		drawProfile(gc, matrix, width, height, margin, points);
+		drawForeground(gc, width, height, margin, matrix, xRange, yRange);
+		drawRect(gc, margin, width, height);
+		drawXAxis(gc, xTicks, xLabels, matrix, margin, width, height);
+		drawYAxis(gc, yTicks, yLabels, matrix, margin, width, height);
+		drawTitles(gc, width, height);
 	}
 }

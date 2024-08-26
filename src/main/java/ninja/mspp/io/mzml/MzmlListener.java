@@ -24,7 +24,10 @@ public class MzmlListener {
 		chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("mzML Files", "*.mzML"));
 		chooser.setTitle("Open mzML File");
 		if (folderName != null) {
-			chooser.setInitialDirectory(new File(folderName));
+			File folder = new File(folderName);
+			if(folder.exists() && folder.isDirectory()) {
+				chooser.setInitialDirectory(new File(folderName));
+			}
 		}
 		File file = chooser.showOpenDialog(manager.getMainStage());
 

@@ -10,7 +10,7 @@ public class ChromatogramCanvas extends ProfileCanvas {
 	protected Chromatogram chromatogram;
 	
 	public ChromatogramCanvas() {
-		super();
+		super("RT", "Int.");
 		this.setProfileColor(CHROMATOGRAM_COLOR);
 		this.chromatogram = null;
 	}

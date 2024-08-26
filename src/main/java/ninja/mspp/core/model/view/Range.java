@@ -1,4 +1,4 @@
-package ninja.mspp.view.panel.model;
+package ninja.mspp.core.model.view;
 
 public class Range {
 	private double start;

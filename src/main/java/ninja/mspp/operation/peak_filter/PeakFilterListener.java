@@ -7,11 +7,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.annotation.clazz.Listener;
+import ninja.mspp.core.annotation.method.HeatMapCanvasForeground;
 import ninja.mspp.core.annotation.method.MenuAction;
 import ninja.mspp.core.annotation.method.SpectrumCanvasForeground;
 import ninja.mspp.core.annotation.parameter.ActiveSample;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.model.view.HeatMap;
 import ninja.mspp.core.view.DrawInfo;
 import ninja.mspp.core.view.ViewInfo;
 
@@ -40,5 +42,11 @@ public class PeakFilterListener {
 	public void drawLabel(DrawInfo<Spectrum> info) {
 		PeakFilterManager manager = PeakFilterManager.getInstance();
 		manager.drawLabel(info);
+	}
+	
+	@HeatMapCanvasForeground
+	public void drawPosition(DrawInfo<HeatMap> info) {
+		PeakFilterManager manager = PeakFilterManager.getInstance();
+		manager.drawPosition(info);
 	}
 }

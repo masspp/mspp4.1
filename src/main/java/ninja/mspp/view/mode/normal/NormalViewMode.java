@@ -12,6 +12,7 @@ import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
 import ninja.mspp.view.panel.ChromatogramCanvas;
+import ninja.mspp.view.panel.HeatMapCanvas;
 import ninja.mspp.view.panel.SpectrumCanvas;
 import ninja.mspp.view.part.table.chromatogram.ChromatogramTableManager;
 import ninja.mspp.view.part.table.sample.SampleTableManager;
@@ -74,6 +75,20 @@ public class NormalViewMode implements Initializable {
 		this.chromatogramPane.heightProperty().addListener(
 			(observable, oldVal, newVal) -> {
 				chromatogramCanvas.setHeight(newVal.doubleValue());
+			}
+		);
+		
+		HeatMapCanvas heatmapCanvas = new HeatMapCanvas();
+		this.heatmapPane.setCenter(heatmapCanvas);
+		manager.setHeatMapCanvas(heatmapCanvas);
+		this.heatmapPane.widthProperty().addListener(
+			(ov, oldVal, newVal) -> {
+				heatmapCanvas.setWidth(newVal.doubleValue());
+			}
+		);
+		this.heatmapPane.heightProperty().addListener(
+			(ov, oldVal, newVal) -> {
+				heatmapCanvas.setHeight(newVal.doubleValue());
 			}
 		);
 	}

@@ -1,6 +1,7 @@
 package ninja.mspp.view.mode.normal;
 
 import ninja.mspp.view.panel.ChromatogramCanvas;
+import ninja.mspp.view.panel.HeatMapCanvas;
 import ninja.mspp.view.panel.SpectrumCanvas;
 
 public class NormalViewModeManager {
@@ -8,6 +9,7 @@ public class NormalViewModeManager {
 	
 	private SpectrumCanvas spectrumCanvas;
 	private ChromatogramCanvas chromatogramCanvas;
+	private HeatMapCanvas heatMapCanvas;
 	
 	private NormalViewModeManager() {
 		this.spectrumCanvas = null;
@@ -30,12 +32,23 @@ public class NormalViewModeManager {
 		this.chromatogramCanvas = chromatogramCanvas;
 	}
 	
+	public HeatMapCanvas getHeatMapCanvas() {
+		return heatMapCanvas;
+	}
+
+	public void setHeatMapCanvas(HeatMapCanvas heatMapCanvas) {
+		this.heatMapCanvas = heatMapCanvas;
+	}
+
 	public void refresh() {
 		if (this.spectrumCanvas != null) {
 			this.spectrumCanvas.refresh();
 		}
 		if (this.chromatogramCanvas != null) {
 			this.chromatogramCanvas.refresh();
+		}
+		if(this.heatMapCanvas != null)  {
+			this.heatMapCanvas.refresh();
 		}
 	}
 	

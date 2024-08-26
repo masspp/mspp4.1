@@ -18,6 +18,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import ninja.mspp.MsppManager;
@@ -26,18 +27,21 @@ import ninja.mspp.core.model.ms.DataPoints;
 import ninja.mspp.core.model.ms.Point;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.model.view.Bounds;
+import ninja.mspp.core.model.view.HeatMap;
+import ninja.mspp.core.model.view.Range;
 import ninja.mspp.core.view.DrawInfo;
 import ninja.mspp.core.view.ViewInfo;
 import ninja.mspp.operation.peak_filter.model.HitPeak;
 import ninja.mspp.operation.peak_filter.model.entity.FilterPeak;
 import ninja.mspp.operation.peak_filter.model.entity.FilterPeakSet;
-import ninja.mspp.view.panel.model.Range;
 
 public class PeakFilterManager {
 	private static PeakFilterManager instance;
 	
 	public static final String SET_KEY = "PEAK_FILTER_SET";
 	private static final int LABEL_MARGIN = 5; 
+	private static final int POSITION_SIZE = 2;
 	
 	private ViewInfo<PeakFilterDialog> activeDialog;
 	private boolean drawingLabel;
@@ -235,7 +239,9 @@ public class PeakFilterManager {
 		MsppManager manager = MsppManager.getInstance();
 		ViewInfo<ResultDialog> viewInfo = manager.showDialog(ResultDialog.class, "ResultDialog.fxml", "Peak Filter Result");
 		ResultDialog dialog = viewInfo.getController();
-		dialog.setResult(peaks, result);				
+		dialog.setResult(peaks, result);
+		
+		manager.invoke(Refresh.class);
 	}
 	
 	public void unsetResult() {
@@ -392,6 +398,48 @@ public class PeakFilterManager {
 					}
 				}
 			}
+		}
+	}
+	
+	public void drawPosition(DrawInfo<HeatMap> drawInfo) {
+		if (this.drawingLabel) {
+			RealMatrix matrix = drawInfo.getMatrix();
+			GraphicsContext gc = drawInfo.getContext();
+			Bounds margin = drawInfo.getMargin();
+			double width = drawInfo.getWidth();
+			double height = drawInfo.getHeight();
+			
+			Paint oldPaint = gc.getStroke();
+			
+			for(FilterPeak peak : this.peaks) { 
+				Color color = Color.valueOf(peak.getColor());
+				gc.setStroke(color);
+				
+				double mz = peak.getMz();
+				
+				for(HitPeak hit : this.result) {
+					Map<FilterPeak, Double> map = hit.getHitMap();
+					if(map.containsKey(peak)) {
+						Spectrum spectrum = hit.getSpectrum();
+						double rt = spectrum.getRt();
+						
+						double[] coordinate = {rt, mz, 1.0};
+						double[] position = matrix.operate(coordinate);
+						
+						double x = position[0];
+						double y = position[1];
+						
+						double minX = Math.max(margin.getLeft(), Math.min(x - POSITION_SIZE, width - margin.getRight()));
+						double maxX = Math.max(margin.getLeft(), Math.min(x + POSITION_SIZE, width - margin.getRight()));
+						double minY = Math.max(margin.getTop(), Math.min(y - POSITION_SIZE, height - margin.getBottom()));
+						double maxY = Math.max(margin.getTop(), Math.min(y + POSITION_SIZE, height - margin.getBottom()));
+						
+						gc.strokeRect(minX, minY, maxX - minX, maxY - minY);
+					}
+				}
+			}
+			
+			gc.setStroke(oldPaint);
 		}
 	}
 

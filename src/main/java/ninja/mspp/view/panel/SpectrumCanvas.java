@@ -9,9 +9,9 @@ import ninja.mspp.core.annotation.method.SpectrumCanvasBackground;
 import ninja.mspp.core.annotation.method.SpectrumCanvasForeground;
 import ninja.mspp.core.model.ms.DataPoints;
 import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.model.view.Bounds;
+import ninja.mspp.core.model.view.Range;
 import ninja.mspp.core.view.DrawInfo;
-import ninja.mspp.view.panel.model.Bounds;
-import ninja.mspp.view.panel.model.Range;
 
 public class SpectrumCanvas extends ProfileCanvas {
 	protected static final Color SPECTRUM_COLOR = Color.RED;
@@ -19,7 +19,7 @@ public class SpectrumCanvas extends ProfileCanvas {
 	protected Spectrum spectrum;
 	
 	public SpectrumCanvas() {
-		super();
+		super("m/z", "Int.");
 		this.setProfileColor(SPECTRUM_COLOR);
 		this.spectrum = null;
 	}

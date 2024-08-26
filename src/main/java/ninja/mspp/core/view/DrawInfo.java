@@ -4,8 +4,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import javafx.scene.canvas.GraphicsContext;
 import ninja.mspp.core.model.ms.DataPoints;
-import ninja.mspp.view.panel.model.Bounds;
-import ninja.mspp.view.panel.model.Range;
+import ninja.mspp.core.model.view.Bounds;
+import ninja.mspp.core.model.view.Range;
 
 public class DrawInfo<T> {
 	private T object;
