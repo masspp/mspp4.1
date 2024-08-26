@@ -8,11 +8,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
+import ninja.mspp.MsppManager;
 import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.view.ViewInfo;
 import ninja.mspp.view.panel.ChromatogramCanvas;
-import ninja.mspp.view.panel.HeatMapCanvas;
+import ninja.mspp.view.panel.HeatMapPanel;
 import ninja.mspp.view.panel.SpectrumCanvas;
 import ninja.mspp.view.part.table.chromatogram.ChromatogramTableManager;
 import ninja.mspp.view.part.table.sample.SampleTableManager;
@@ -36,7 +38,7 @@ public class NormalViewMode implements Initializable {
 	
 
 	@Override
-	public void initialize(URL location, ResourceBundle resources) {
+	public void initialize(URL location, ResourceBundle resources){
 		NormalViewModeManager manager = NormalViewModeManager.getInstance();
 		
 		TableView<Sample> sampleTable = SampleTableManager.getInstance().createTableView();
@@ -78,18 +80,24 @@ public class NormalViewMode implements Initializable {
 			}
 		);
 		
-		HeatMapCanvas heatmapCanvas = new HeatMapCanvas();
-		this.heatmapPane.setCenter(heatmapCanvas);
-		manager.setHeatMapCanvas(heatmapCanvas);
-		this.heatmapPane.widthProperty().addListener(
-			(ov, oldVal, newVal) -> {
-				heatmapCanvas.setWidth(newVal.doubleValue());
-			}
-		);
-		this.heatmapPane.heightProperty().addListener(
-			(ov, oldVal, newVal) -> {
-				heatmapCanvas.setHeight(newVal.doubleValue());
-			}
-		);
+		try {
+			MsppManager msppManager = MsppManager.getInstance();
+			ViewInfo<HeatMapPanel> heatmapInfo = msppManager.createWindow(HeatMapPanel.class, "HeatMapPanel.fxml");
+			this.heatmapPane.setCenter(heatmapInfo.getWindow());
+			manager.setHeatMapCanvas(heatmapInfo.getController().getCanvas());
+			this.heatmapPane.widthProperty().addListener(
+				(observable, oldVal, newVal) -> {
+					heatmapInfo.getController().getPane().setPrefWidth(newVal.doubleValue());
+				}
+			);
+			this.heatmapPane.heightProperty().addListener(
+				(observable, oldVal, newVal) -> {
+					heatmapInfo.getController().getPane().setPrefHeight(newVal.doubleValue());
+				}
+			);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

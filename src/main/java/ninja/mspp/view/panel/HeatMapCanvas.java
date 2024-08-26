@@ -64,6 +64,12 @@ public class HeatMapCanvas extends ProfileCanvas {
 		this.rangeStack.clear();
 		this.draw();
 	}
+	
+	public void setTheme(ColorTheme theme) {
+		this.theme = theme;
+		this.image = null;
+		this.draw();
+	}
 		
 	protected void drawImage(GraphicsContext g, int width, int height, Bounds margin, double[][] data) {
 		int rtSize = HeatMap.RT_SIZE;

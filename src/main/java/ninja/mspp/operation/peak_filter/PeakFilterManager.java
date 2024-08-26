@@ -232,7 +232,6 @@ public class PeakFilterManager {
 		return result;
 	}
 
-	
 	public void openResultDialog(List<FilterPeak> peaks, List<HitPeak> result) throws IOException {
 		this.peaks = peaks;
 		this.result = result;
@@ -402,7 +401,7 @@ public class PeakFilterManager {
 	}
 	
 	public void drawPosition(DrawInfo<HeatMap> drawInfo) {
-		if (this.drawingLabel) {
+		if (this.drawingLabel && this.peaks != null && this.result != null) {
 			RealMatrix matrix = drawInfo.getMatrix();
 			GraphicsContext gc = drawInfo.getContext();
 			Bounds margin = drawInfo.getMargin();
