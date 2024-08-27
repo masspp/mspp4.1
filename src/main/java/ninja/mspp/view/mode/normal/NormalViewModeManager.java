@@ -3,6 +3,7 @@ package ninja.mspp.view.mode.normal;
 import ninja.mspp.view.panel.ChromatogramCanvas;
 import ninja.mspp.view.panel.HeatMapCanvas;
 import ninja.mspp.view.panel.SpectrumCanvas;
+import ninja.mspp.view.panel.ThreeDPanel;
 
 public class NormalViewModeManager {
 	private static NormalViewModeManager instance;
@@ -10,6 +11,7 @@ public class NormalViewModeManager {
 	private SpectrumCanvas spectrumCanvas;
 	private ChromatogramCanvas chromatogramCanvas;
 	private HeatMapCanvas heatMapCanvas;
+	private ThreeDPanel threeDPanel;
 	
 	private NormalViewModeManager() {
 		this.spectrumCanvas = null;
@@ -38,6 +40,14 @@ public class NormalViewModeManager {
 
 	public void setHeatMapCanvas(HeatMapCanvas heatMapCanvas) {
 		this.heatMapCanvas = heatMapCanvas;
+	}
+	
+	public void setThreeDPanel(ThreeDPanel threeDPanel) {
+		this.threeDPanel = threeDPanel;
+	}
+	
+	public ThreeDPanel getThreeDPanel() {
+		return this.threeDPanel;
 	}
 
 	public void refresh() {

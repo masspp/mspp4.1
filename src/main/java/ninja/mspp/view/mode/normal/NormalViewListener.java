@@ -17,6 +17,7 @@ import ninja.mspp.core.view.ViewInfo;
 import ninja.mspp.view.panel.ChromatogramCanvas;
 import ninja.mspp.view.panel.HeatMapCanvas;
 import ninja.mspp.view.panel.SpectrumCanvas;
+import ninja.mspp.view.panel.ThreeDPanel;
 
 @Listener("Normal View Mode")
 public class NormalViewListener {
@@ -65,6 +66,11 @@ public class NormalViewListener {
             HeatMapCanvas canvas = modeManager.getHeatMapCanvas();
             if (canvas != null) {
                 canvas.setHeatMap(heatmap);
+            }
+            
+            ThreeDPanel panel = modeManager.getThreeDPanel();
+            if(panel != null) {
+            	panel.setHeatmap(heatmap);
             }
         }
 	}
