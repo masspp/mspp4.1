@@ -72,6 +72,16 @@ public class MainFrame implements Initializable {
 				try {
 					Parent parent = (Parent)method.invoke(null);
 					this.pane.setCenter(parent);
+					this.pane.widthProperty().addListener(
+						(ov, oldVal, newVal) -> {
+							parent.prefWidth(newVal.doubleValue());
+						}
+					);
+					this.pane.heightProperty().addListener(
+						(ov, oldVal, newVal) -> {
+							parent.prefHeight(newVal.doubleValue());
+						}
+					);
 					VIEW_MODE.set(name);
 					manager.setStatus("VIEW_MODE", name);
 				}
