@@ -6,7 +6,8 @@ public abstract class Spectrum {
 		NEGATIVE,
 		UNKNOWN
 	}
-		
+
+	private Sample sample;
 	private String name;
 	private String title;
 	private int scanNumber;
@@ -17,10 +18,12 @@ public abstract class Spectrum {
 	private double minMz;
 	private double maxMz;
 	private boolean centroidMode;
+	private double tic;
 	
 	
-	public Spectrum(String name, String title, int scanNumber, double rt, int msLevel, Polarity polarity,
+	public Spectrum(Sample sample, String name, String title, int scanNumber, double rt, int msLevel, Polarity polarity,
 			double precursor, double minMz, double maxMz, boolean centroidMode) {
+		this.sample = sample;
 		this.name = name;
 		this.title = title;
 		this.scanNumber = scanNumber;
@@ -31,6 +34,11 @@ public abstract class Spectrum {
 		this.minMz = minMz;
 		this.maxMz = maxMz;
 		this.centroidMode = centroidMode;
+		this.tic = Double.NaN;
+	}
+	
+	public Sample getSample() {
+		return this.sample;
 	}
 	
 	public String getName() {
@@ -74,8 +82,27 @@ public abstract class Spectrum {
 	}
 	
 	public DataPoints readDataPoints() {
-		return onReadDataPoints();
+		DataPoints points = this.onReadDataPoints();
+		if(Double.isNaN(this.tic)) {
+			double tic = 0.0;
+			for(Point point : points) {
+				tic += point.getY();
+			}
+			this.tic = tic;
+		}
+		return points;
 	}
 	
+	public double getTic() {
+		return tic;
+	}
+
+	public void setTic(double tic) {
+		if(Double.isNaN(this.tic)) {
+			this.readDataPoints();
+		}
+		this.tic = tic;
+	}
+
 	protected abstract DataPoints onReadDataPoints();
 }

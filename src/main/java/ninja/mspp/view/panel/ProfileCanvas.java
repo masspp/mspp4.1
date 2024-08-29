@@ -227,8 +227,8 @@ public class ProfileCanvas extends CanvasBase {
                 double endX = Math.max(this.startPoint.getX(), x);
                 
                 RealMatrix inverse = MatrixUtils.inverse(this.matrix);
-                double[] start = { startX, 0.0, 1.0 };
-                double[] end = { endX, 0.0, 1.0 };
+                double[] start = {startX, 0.0, 1.0};
+                double[] end = {endX, 0.0, 1.0};
                 double dataStart = inverse.operate(start)[0];
                 double dataEnd = inverse.operate(end)[0];
                 

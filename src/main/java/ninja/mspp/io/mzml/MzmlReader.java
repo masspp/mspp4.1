@@ -21,13 +21,13 @@ public class MzmlReader {
 		
 		List<Chromatogram> chromatograms = rawFile.getChromatograms();
 		for (Chromatogram chromatogram : chromatograms) {
-			MzmlChromatogram mzmlChromatogram = new MzmlChromatogram(chromatogram);
+			MzmlChromatogram mzmlChromatogram = new MzmlChromatogram(sample, chromatogram);
 			sample.getChromatograms().add(mzmlChromatogram);
 		}
 		
 		List<MsScan> scans = rawFile.getScans();
 		for(MsScan scan : scans) {
-			MzmlSpectrum mzmlSpectrum = new MzmlSpectrum(scan);
+			MzmlSpectrum mzmlSpectrum = new MzmlSpectrum(sample, scan);
 			sample.getSpectra().add(mzmlSpectrum);
         }
 		return sample;
