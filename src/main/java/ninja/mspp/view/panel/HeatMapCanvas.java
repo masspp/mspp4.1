@@ -358,7 +358,7 @@ public class HeatMapCanvas extends ProfileCanvas {
 		MsppManager manager = MsppManager.getInstance();
 		
 		DrawInfo<HeatMap> drawInfo = new DrawInfo<HeatMap>(
-			this.heatmap, width, height, margin, null, matrix, xRange, yRange, gc
+			this.heatmap, width, height, margin, null, matrix, xRange, yRange, gc, this
 		);
 		manager.invoke(HeatMapCanvasForeground.class, drawInfo);
 	}
@@ -369,7 +369,7 @@ public class HeatMapCanvas extends ProfileCanvas {
 		MsppManager manager = MsppManager.getInstance();
 		
 		DrawInfo<HeatMap> drawInfo = new DrawInfo<HeatMap>(
-			this.heatmap, width, height, margin, null, matrix, xRange, yRange, gc
+			this.heatmap, width, height, margin, null, matrix, xRange, yRange, gc, this
 		);
 		manager.invoke(HeatMapCanvasBackground.class, drawInfo);
 	}

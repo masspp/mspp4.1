@@ -60,4 +60,35 @@ public class DataPoints extends ArrayList<Point> {
 		}
 		return total;
 	}
+	
+	public double calculateInterpolationY(double x) {
+		double y = 0.0;
+		int index = Collections.binarySearch(this, new Point(x, 0.0));
+		if(index >= 0) {
+			y = this.get(index).getY();
+		}
+		else {
+			int beforeIndex = - index - 2;
+			int afterIndex = - index - 1;
+			
+			if(beforeIndex < 0 && afterIndex >= this.size()) {
+				y = 0.0;
+			}
+			else if(beforeIndex < 0) {
+				y = this.get(afterIndex).getY();
+			}
+			else if(afterIndex >= this.size()) {
+				y = this.get(beforeIndex).getY();
+			}
+			else {
+				double x1 = this.get(beforeIndex).getX();
+				double y1 = this.get(beforeIndex).getY();
+				double x2 = this.get(afterIndex).getX();
+				double y2 = this.get(afterIndex).getY();
+				
+				y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
+			}
+		}
+		return y;
+	}
 }

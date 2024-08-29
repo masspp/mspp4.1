@@ -81,7 +81,7 @@ public class SpectrumCanvas extends ProfileCanvas {
 		MsppManager manager = MsppManager.getInstance();
 		
 		DrawInfo<Spectrum> drawInfo = new DrawInfo<Spectrum>(
-			this.spectrum, width, height, margin, this.points, matrix, xRange, yRange, gc
+			this.spectrum, width, height, margin, this.points, matrix, xRange, yRange, gc, this
 		);
 		
 		manager.invoke(SpectrumCanvasForeground.class, drawInfo);
@@ -93,7 +93,7 @@ public class SpectrumCanvas extends ProfileCanvas {
 		MsppManager manager = MsppManager.getInstance();
 		
 		DrawInfo<Spectrum> drawInfo = new DrawInfo<Spectrum>(
-			this.spectrum, width, height, margin, this.points, matrix, xRange, yRange, gc
+			this.spectrum, width, height, margin, this.points, matrix, xRange, yRange, gc, this
 		);
 		
 		manager.invoke(SpectrumCanvasBackground.class, drawInfo);		
