@@ -9,13 +9,15 @@ import io.github.msdk.datamodel.MsScan;
 import io.github.msdk.datamodel.MsSpectrumType;
 import io.github.msdk.datamodel.PolarityType;
 import ninja.mspp.core.model.ms.DataPoints;
+import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
 
 public class MzmlSpectrum extends Spectrum {
 	private MsScan scan;
 	
-	public MzmlSpectrum(MsScan scan) {
+	public MzmlSpectrum(Sample sample, MsScan scan) {
 		super(
+			sample,
 			"Scan " + scan.getScanNumber() + String.format(" [%.4f]",  scan.getRetentionTime() / 60.0),
 			scan.getScanDefinition(),
 			scan.getScanNumber(),

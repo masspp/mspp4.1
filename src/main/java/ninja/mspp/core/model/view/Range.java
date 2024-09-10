@@ -1,4 +1,4 @@
-package ninja.mspp.view.panel.model;
+package ninja.mspp.core.model.view;
 
 public class Range {
 	private double start;
@@ -27,5 +27,9 @@ public class Range {
 	
 	public double getCenter() {
 		return (this.start + this.end) / 2.0;
+	}
+	
+	public String toString() {
+		return String.format("[%f, %f]", this.start, this.end);
 	}
 }

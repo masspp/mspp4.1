@@ -4,8 +4,9 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import javafx.scene.canvas.GraphicsContext;
 import ninja.mspp.core.model.ms.DataPoints;
-import ninja.mspp.view.panel.model.Bounds;
-import ninja.mspp.view.panel.model.Range;
+import ninja.mspp.core.model.view.Bounds;
+import ninja.mspp.core.model.view.Range;
+import ninja.mspp.view.panel.ProfileCanvas;
 
 public class DrawInfo<T> {
 	private T object;
@@ -17,9 +18,10 @@ public class DrawInfo<T> {
 	private Range xRange;
 	private Range yRange;
 	private GraphicsContext context;
+	private ProfileCanvas canvas;
 	
 	public DrawInfo(T object, double width, double height, Bounds margin, DataPoints points,
-			RealMatrix matrix, Range xRange, Range yRange, GraphicsContext context) {
+			RealMatrix matrix, Range xRange, Range yRange, GraphicsContext context, ProfileCanvas canvas) {
 		this.object = object;
 		this.width = width;
 		this.height = height;
@@ -29,6 +31,7 @@ public class DrawInfo<T> {
 		this.xRange = xRange;
 		this.yRange = yRange;
 		this.context = context;
+		this.canvas = canvas;
 	}
 	
 	public T getObject() {
@@ -81,6 +84,10 @@ public class DrawInfo<T> {
 	
 	public double right() {
 		return this.width - this.margin.getRight();
+	}
+	
+	public ProfileCanvas getCanvas() {
+		return this.canvas;
 	}
 }
 

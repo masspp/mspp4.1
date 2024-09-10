@@ -5,15 +5,19 @@ import java.io.IOException;
 import javafx.scene.Parent;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.annotation.clazz.Listener;
+import ninja.mspp.core.annotation.method.OnHeatMap;
 import ninja.mspp.core.annotation.method.OnSelectChromatogram;
 import ninja.mspp.core.annotation.method.OnSelectSpectrum;
 import ninja.mspp.core.annotation.method.Refresh;
 import ninja.mspp.core.annotation.method.ViewMode;
 import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.model.view.HeatMap;
 import ninja.mspp.core.view.ViewInfo;
 import ninja.mspp.view.panel.ChromatogramCanvas;
+import ninja.mspp.view.panel.HeatMapCanvas;
 import ninja.mspp.view.panel.SpectrumCanvas;
+import ninja.mspp.view.panel.ThreeDPanel;
 
 @Listener("Normal View Mode")
 public class NormalViewListener {
@@ -50,6 +54,25 @@ public class NormalViewListener {
 				canvas.setChromatogram(chromatogram);
 			}
 		}
+	}
+	
+	@OnHeatMap
+	public void onHeatMap(HeatMap heatmap) {
+		MsppManager manager = MsppManager.getInstance();
+        String viewMode = manager.getStatus("VIEW_MODE");
+        if (viewMode.equals("Normal")) {
+            NormalViewModeManager modeManager = NormalViewModeManager.getInstance();
+            
+            HeatMapCanvas canvas = modeManager.getHeatMapCanvas();
+            if (canvas != null) {
+                canvas.setHeatMap(heatmap);
+            }
+            
+            ThreeDPanel panel = modeManager.getThreeDPanel();
+            if(panel != null) {
+            	panel.setHeatmap(heatmap);
+            }
+        }
 	}
 	
 	@Refresh

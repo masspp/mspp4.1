@@ -8,11 +8,15 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
+import ninja.mspp.MsppManager;
 import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
+import ninja.mspp.core.view.ViewInfo;
 import ninja.mspp.view.panel.ChromatogramCanvas;
+import ninja.mspp.view.panel.HeatMapPanel;
 import ninja.mspp.view.panel.SpectrumCanvas;
+import ninja.mspp.view.panel.ThreeDPanel;
 import ninja.mspp.view.part.table.chromatogram.ChromatogramTableManager;
 import ninja.mspp.view.part.table.sample.SampleTableManager;
 import ninja.mspp.view.part.table.spectrum.SpectrumTableManager;
@@ -35,7 +39,7 @@ public class NormalViewMode implements Initializable {
 	
 
 	@Override
-	public void initialize(URL location, ResourceBundle resources) {
+	public void initialize(URL location, ResourceBundle resources){
 		NormalViewModeManager manager = NormalViewModeManager.getInstance();
 		
 		TableView<Sample> sampleTable = SampleTableManager.getInstance().createTableView();
@@ -76,5 +80,45 @@ public class NormalViewMode implements Initializable {
 				chromatogramCanvas.setHeight(newVal.doubleValue());
 			}
 		);
+		
+		MsppManager msppManager = MsppManager.getInstance();
+		
+		try {
+			ViewInfo<HeatMapPanel> heatmapInfo = msppManager.createWindow(HeatMapPanel.class, "HeatMapPanel.fxml");
+			this.heatmapPane.setCenter(heatmapInfo.getWindow());
+			manager.setHeatMapCanvas(heatmapInfo.getController().getCanvas());
+			this.heatmapPane.widthProperty().addListener(
+				(observable, oldVal, newVal) -> {
+					heatmapInfo.getController().getPane().setPrefWidth(newVal.doubleValue());
+				}
+			);
+			this.heatmapPane.heightProperty().addListener(
+				(observable, oldVal, newVal) -> {
+					heatmapInfo.getController().getPane().setPrefHeight(newVal.doubleValue());
+				}
+			);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			ViewInfo<ThreeDPanel> threeDInfo = msppManager.createWindow(ThreeDPanel.class, "ThreeDPanel.fxml");
+			this.threeDPane.setCenter(threeDInfo.getWindow());
+			manager.setThreeDPanel(threeDInfo.getController());
+			this.threeDPane.widthProperty().addListener(
+				(observable, oldVal, newVal) -> {
+					threeDInfo.getController().getPane().setPrefWidth(newVal.doubleValue());
+				}
+			);
+			this.threeDPane.heightProperty().addListener(
+				(observable, oldVal, newVal) -> {
+					threeDInfo.getController().getPane().setPrefHeight(newVal.doubleValue());
+				}
+			);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

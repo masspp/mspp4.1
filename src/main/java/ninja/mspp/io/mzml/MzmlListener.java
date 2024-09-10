@@ -9,6 +9,7 @@ import ninja.mspp.core.annotation.clazz.Listener;
 import ninja.mspp.core.annotation.method.MenuAction;
 import ninja.mspp.core.annotation.method.OnOpenSample;
 import ninja.mspp.core.model.ms.Sample;
+import ninja.mspp.core.model.ms.TicChromatogram;
 
 @Listener("mzML Input Listener")
 public class MzmlListener {
@@ -24,7 +25,10 @@ public class MzmlListener {
 		chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("mzML Files", "*.mzML"));
 		chooser.setTitle("Open mzML File");
 		if (folderName != null) {
-			chooser.setInitialDirectory(new File(folderName));
+			File folder = new File(folderName);
+			if(folder.exists() && folder.isDirectory()) {
+				chooser.setInitialDirectory(new File(folderName));
+			}
 		}
 		File file = chooser.showOpenDialog(manager.getMainStage());
 
@@ -33,6 +37,10 @@ public class MzmlListener {
 			manager.saveParameter(FOLDER_KEY, folder.getAbsolutePath());
 			MzmlReader reader = new MzmlReader();
 			Sample sample = reader.read(file.getAbsolutePath());
+			if(sample.getChromatograms().isEmpty()) {
+				TicChromatogram tic = new TicChromatogram(sample);
+				sample.getChromatograms().add(tic);
+			}
 			manager.invoke(OnOpenSample.class, sample);
 		}
 	}
