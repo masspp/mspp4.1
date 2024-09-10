@@ -1,6 +1,8 @@
 package ninja.mspp.operation.mass_calculator;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.glycoinfo.ms.GlycanMassUtility.dict.molecule.NeutralType;
@@ -75,11 +77,10 @@ public class MassCalculatorDialog {
 	@FXML
 	private void initialize() {
 		// Add items to ChoiceBox
-		typeChoiceBox.getItems().addAll(
-				CompoundType.CHEMICAL_COMPOSITION.getName(),
-				CompoundType.PEPTIDE.getName(),
-				CompoundType.GLYCAN_COMPOSITION.getName()
-			);
+		List<String> typeNames = new ArrayList<>();
+		for (CompoundType type : CompoundType.values())
+			typeNames.add(type.getName());
+		typeChoiceBox.getItems().addAll(typeNames);
 		typeChoiceBox.getSelectionModel().selectFirst();
 		updateEgLabel();
 

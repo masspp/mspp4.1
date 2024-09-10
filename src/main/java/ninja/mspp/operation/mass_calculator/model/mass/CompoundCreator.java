@@ -1,6 +1,8 @@
 package ninja.mspp.operation.mass_calculator.model.mass;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.expasy.mzjava.proteomics.mol.Peptide;
 import org.glycoinfo.ms.GlycanMassUtility.om.Composition;
@@ -18,6 +20,8 @@ public class CompoundCreator {
 			return createPeptideMassElement(name);
 		case GLYCAN_COMPOSITION:
 			return createGlycanCompositionMassElement(name);
+		case GLYCOPEPTIDE:
+			return createGlycopeptideMassElement(name);
 		default:
 			throw new IllegalArgumentException("Unsupported mass element type.");
 		}
@@ -35,6 +39,18 @@ public class CompoundCreator {
 
 	private static IMassElement createGlycanCompositionMassElement(String name) throws IllegalArgumentException {
 		return Composition.parse(name);
+	}
+
+	private static IMassElement createGlycopeptideMassElement(String name) throws IllegalArgumentException {
+		String[] parts = name.split("\\|");
+		if (parts.length != 2)
+			throw new IllegalArgumentException("Invalid glycopeptide format.");
+
+		List<IMassElement> elements = new ArrayList<>();
+		elements.add( createPeptideMassElement(parts[0]) );
+		elements.add( createGlycanCompositionMassElement(parts[1]) );
+
+		return MassElementCreator.createComplexMassElement(elements);
 	}
 
 }

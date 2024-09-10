@@ -3,7 +3,9 @@ package ninja.mspp.operation.mass_calculator.model.mass;
 public enum CompoundType {
 	CHEMICAL_COMPOSITION("Chemical composition", "C6H12O6"),
 	PEPTIDE("Peptide sequence", "PEPTIDE"),
-	GLYCAN_COMPOSITION("Glycan composition", "HexNAc(2)Hex(3)");
+	GLYCAN_COMPOSITION("Glycan composition", "HexNAc(2)Hex(3)"),
+	GLYCOPEPTIDE("Glycopeptide format", "PEPTIDE|HexNAc(2)Hex(3)"),
+	;
 
 	private String name;
 	private String eg;
