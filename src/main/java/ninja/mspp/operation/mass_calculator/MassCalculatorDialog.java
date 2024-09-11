@@ -52,10 +52,25 @@ public class MassCalculatorDialog {
 	private RadioButton mhRadioButton;
 
 	@FXML
+	private RadioButton m2hRadioButton;
+
+	@FXML
+	private RadioButton m3hRadioButton;
+
+	@FXML
 	private RadioButton mNaRadioButton;
 
 	@FXML
 	private RadioButton m2NaRadioButton;
+
+	@FXML
+	private RadioButton m3NaRadioButton;
+
+	@FXML
+	private RadioButton mXRadioButton;
+
+	@FXML
+	private TextField ionField;
 
 	@FXML
 	private CheckBox watLossCheckBox;
@@ -87,8 +102,12 @@ public class MassCalculatorDialog {
 		// Create and set up the ToggleGroup for the RadioButtons
 		adductGroup = new ToggleGroup();
 		mhRadioButton.setToggleGroup(adductGroup);
+		m2hRadioButton.setToggleGroup(adductGroup);
+		m3hRadioButton.setToggleGroup(adductGroup);
 		mNaRadioButton.setToggleGroup(adductGroup);
 		m2NaRadioButton.setToggleGroup(adductGroup);
+		m3NaRadioButton.setToggleGroup(adductGroup);
+		mXRadioButton.setToggleGroup(adductGroup);
 
 		// Initial settings and other initialization tasks
 		warningLabel.setText("");  // Clear initial warning message
@@ -97,6 +116,7 @@ public class MassCalculatorDialog {
 		nameField.textProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
 		typeChoiceBox.valueProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
 		adductGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
+		ionField.textProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
 		watLossCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
 
 		currentStageForPeakFilter = null;
@@ -115,6 +135,7 @@ public class MassCalculatorDialog {
 
 		warningLabel.setText("");
 		massField.setText("");
+		ionField.setText("");
 		mzField.setText("");
 	}
 
@@ -131,6 +152,17 @@ public class MassCalculatorDialog {
 			massField.clear();
 			mzField.clear();
 			return;
+		}
+
+		ionField.setEditable(false);
+		ionField.setDisable(true);
+		if (mXRadioButton.isSelected()) {
+			ionField.setEditable(true);
+			ionField.setDisable(false);
+			if (ionField.getText().isEmpty()) {
+				mzField.clear();
+				return;
+			}
 		}
 
 		// Calculate mass and mz
@@ -213,10 +245,18 @@ public class MassCalculatorDialog {
 	private String getSelectedIon() {
 		if (mhRadioButton.isSelected())
 			return "H";
+		else if (m2hRadioButton.isSelected())
+			return "2H";
+		else if (m3hRadioButton.isSelected())
+			return "3H";
 		else if (mNaRadioButton.isSelected())
 			return "Na";
 		else if (m2NaRadioButton.isSelected())
 			return "2Na";
+		else if (m3NaRadioButton.isSelected())
+			return "3Na";
+		else if (mXRadioButton.isSelected())
+			return ionField.getText();
 		return null;
 	}
 
