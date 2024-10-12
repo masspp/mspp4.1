@@ -10,6 +10,7 @@ import ninja.mspp.core.annotation.method.MenuAction;
 import ninja.mspp.core.annotation.method.OnOpenSample;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.TicChromatogram;
+import ninja.mspp.view.GuiManager;
 
 @Listener("mzML Input Listener")
 public class MzmlListener {
@@ -33,6 +34,9 @@ public class MzmlListener {
 		File file = chooser.showOpenDialog(manager.getMainStage());
 
 		if (file != null) {
+			GuiManager gui = GuiManager.getInstance();
+			gui.startWaitingCursor();
+			
 			File folder = file.getParentFile();
 			manager.saveParameter(FOLDER_KEY, folder.getAbsolutePath());
 			MzmlReader reader = new MzmlReader();
@@ -42,6 +46,8 @@ public class MzmlListener {
 				sample.getChromatograms().add(tic);
 			}
 			manager.invoke(OnOpenSample.class, sample);
+			
+			gui.endWaitingCursor();
 		}
 	}
 }

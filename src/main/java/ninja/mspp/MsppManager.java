@@ -20,6 +20,8 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -31,6 +33,8 @@ import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.Sample;
 import ninja.mspp.core.model.ms.Spectrum;
 import ninja.mspp.core.view.ViewInfo;
+import ninja.mspp.interfaces.Job;
+import ninja.mspp.view.GuiManager;
 import ninja.mspp.view.MainFrame;
 
 public class MsppManager {
@@ -254,4 +258,54 @@ public class MsppManager {
         }
         return MsppManager.instance;
     }
+
+	
+	public void startTask(Job job) throws InterruptedException {
+		GuiManager gui = GuiManager.getInstance();		
+		
+		Task<Object> task = new Task<Object>() {
+			@Override
+			protected Object call() throws Exception {
+				return job.execute();
+			}
+		};
+		task.setOnSucceeded(
+			event -> {
+				try {
+					Object result = task.get();
+					job.onSucceeded(result);
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		);
+				
+		Thread thread = new Thread(task);
+		
+		Thread cursorThread = new Thread() {
+			@Override
+			public void run() {
+				Platform.runLater(
+					() -> {
+						gui.startWaitingCursor();
+					}
+				);
+				thread.start();
+				try {
+					thread.join();
+				}
+				catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				Platform.runLater(
+					() -> {
+						gui.endWaitingCursor();
+					}
+				);
+			}
+		};
+
+		cursorThread.start();
+	}
 }
