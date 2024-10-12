@@ -1,5 +1,8 @@
 package ninja.mspp.core.model.ms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Spectrum {
 	public enum Polarity {
 		POSITIVE,
@@ -14,15 +17,18 @@ public abstract class Spectrum {
 	private double rt;
 	private int msLevel;
 	private Polarity polarity;
-	private double precursor;
+	private double precursorMass;
 	private double minMz;
 	private double maxMz;
 	private boolean centroidMode;
 	private double tic;
 	
+	private Spectrum precursor;
+	private List<Spectrum> products;
+	
 	
 	public Spectrum(Sample sample, String name, String title, int scanNumber, double rt, int msLevel, Polarity polarity,
-			double precursor, double minMz, double maxMz, boolean centroidMode) {
+			double precursorMass, double minMz, double maxMz, boolean centroidMode) {
 		this.sample = sample;
 		this.name = name;
 		this.title = title;
@@ -30,11 +36,14 @@ public abstract class Spectrum {
 		this.rt = rt;
 		this.msLevel = msLevel;
 		this.polarity = polarity;
-		this.precursor = precursor;
+		this.precursorMass = precursorMass;
 		this.minMz = minMz;
 		this.maxMz = maxMz;
 		this.centroidMode = centroidMode;
 		this.tic = Double.NaN;
+		
+		this.precursor = null;
+		this.products = null;
 	}
 	
 	public Sample getSample() {
@@ -65,8 +74,8 @@ public abstract class Spectrum {
 		return this.polarity;
 	}
 	
-	public double getPrecursor() {
-		return this.precursor;
+	public double getPrecursorMass() {
+		return this.precursorMass;
 	}
 	
 	public double getMinMz() {
@@ -102,6 +111,41 @@ public abstract class Spectrum {
 			this.readDataPoints();
 		}
 		this.tic = tic;
+	}
+	
+	public void setPrecursor(Spectrum precursor) {
+		this.precursor = precursor;
+	}
+	
+	public Spectrum getPrecursor() {
+		return this.precursor;
+	}
+	
+	public void addProduct(Spectrum product) {
+		if(this.products == null) {
+			this.products = new ArrayList<Spectrum>();
+		}
+		this.products.add(product);
+	}
+	
+	public List<Spectrum> getProducts() {
+		return this.products;
+	}
+	
+	@Override
+	public String toString() {
+		String string = String.format(
+			"Scan %d (rt = %.2f",
+			this.scanNumber,
+			this.rt
+		);
+		
+		if(this.precursorMass > 0.0) {
+			string += String.format(", precursor=%.2f",  this.precursorMass);
+		}
+		string += ")";
+		
+		return string;
 	}
 
 	protected abstract DataPoints onReadDataPoints();

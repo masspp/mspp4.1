@@ -30,7 +30,7 @@ public class MzmlSpectrum extends Spectrum {
 			isCentroidMode(scan)
 		);
 		this.scan = scan;
-	}	
+	}
 
 	@Override
 	protected DataPoints onReadDataPoints() {
@@ -95,5 +95,18 @@ public class MzmlSpectrum extends Spectrum {
 			}
 		}
 		return endMz;
+	}
+	
+	public int getPrecursorScanNumber() {
+		int precursorScan = -1;
+		List<IsolationInfo> isolations = this.scan.getIsolations();
+		if(isolations != null && isolations.size() > 0) {
+			IsolationInfo isolation = isolations.get(0);
+			Integer integer = isolation.getPrecursorScanNumber();
+			if(integer != null) {
+				precursorScan = integer.intValue();
+			}
+		}
+		return precursorScan;
 	}
 }

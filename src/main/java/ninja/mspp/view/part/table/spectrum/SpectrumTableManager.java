@@ -74,7 +74,7 @@ public class SpectrumTableManager {
 		
 		TableColumn<Spectrum, Double> precursorColumn = new TableColumn<Spectrum, Double>("Precursor");
 		precursorColumn.setPrefWidth(75);
-		precursorColumn.setCellValueFactory(new PropertyValueFactory<Spectrum, Double>("precursor"));
+		precursorColumn.setCellValueFactory(new PropertyValueFactory<Spectrum, Double>("precursorMass"));
 		precursorColumn.setCellFactory(
 			(column) -> {
 				return new TableCell<Spectrum, Double>() {

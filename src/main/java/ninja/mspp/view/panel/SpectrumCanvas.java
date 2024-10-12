@@ -20,6 +20,7 @@ import ninja.mspp.core.model.ms.DataPoints;
 import ninja.mspp.core.model.ms.Spectrum;
 import ninja.mspp.core.model.view.Bounds;
 import ninja.mspp.core.model.view.Range;
+import ninja.mspp.core.types.SpectrumCondition;
 import ninja.mspp.core.view.DrawInfo;
 import ninja.mspp.core.view.SpectrumActionEvent;
 
@@ -35,6 +36,8 @@ public class SpectrumCanvas extends ProfileCanvas {
 	}
 	
 	private ContextMenu createActionMenu(double mz) {
+		Spectrum spectrum = this.spectrum;
+		
 		MsppManager manager = MsppManager.getInstance();
 		
 		ContextMenu menu = new ContextMenu();
@@ -47,13 +50,30 @@ public class SpectrumCanvas extends ProfileCanvas {
 		);
 		SpectrumActionEvent event = new SpectrumActionEvent(this.spectrum, mz);
 		for(ListenerMethod<SpectrumAction> method : methods) {
-			MenuItem item = new MenuItem(method.getAnnotation().value());
-			item.setOnAction(
-				(e) -> {
-					method.invoke(event);
+			boolean available = true;
+			SpectrumCondition condition = method.getAnnotation().condition();
+			
+			if(condition == SpectrumCondition.HAS_PRECURSOR) {
+				if(spectrum.getPrecursor() == null) {
+					available = false;
 				}
-			);
-			menu.getItems().add(item);
+			}
+			if(condition == SpectrumCondition.HAS_PRODUCTS) {
+				List<Spectrum> products = spectrum.getProducts();
+				if(products == null || products.isEmpty()) {
+					available = false;
+				}
+			}
+			
+			if(available) {
+				MenuItem item = new MenuItem(method.getAnnotation().value());
+				item.setOnAction(
+					(e) -> {
+						method.invoke(event);
+					}
+				);
+				menu.getItems().add(item);
+			}
 		}
 		
 		return menu;

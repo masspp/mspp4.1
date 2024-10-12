@@ -119,7 +119,7 @@ public class ResultDialog implements Initializable {
 		precursorColumn.setCellValueFactory(
 			data -> {
 				Spectrum spectrum = data.getValue().getSpectrum();
-				String text = String.format("%.2f", spectrum.getPrecursor());
+				String text = String.format("%.2f", spectrum.getPrecursorMass());
 				return new ReadOnlyStringWrapper(text);
 			}
 		);
