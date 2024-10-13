@@ -18,10 +18,10 @@ public class MzmlSpectrum extends Spectrum {
 	public MzmlSpectrum(Sample sample, MsScan scan) {
 		super(
 			sample,
-			"Scan " + scan.getScanNumber() + String.format(" [%.4f]",  scan.getRetentionTime() / 60.0),
+			"Scan " + scan.getScanNumber() + String.format(" [%.4f]", getRetentionTime(scan)),
 			scan.getScanDefinition(),
 			scan.getScanNumber(),
-			scan.getRetentionTime() / 60.0,
+			getRetentionTime(scan),
 			scan.getMsLevel(),
 			getPolarity(scan.getPolarity()),
 			getPrecursorMz(scan),
@@ -108,5 +108,12 @@ public class MzmlSpectrum extends Spectrum {
 			}
 		}
 		return precursorScan;
+	}
+
+	private static Float getRetentionTime(MsScan scan) {
+		if (scan != null && scan.getRetentionTime() != null) {
+			return scan.getRetentionTime() / 60.0f;
+		}
+		return 1.0f * scan.getScanNumber();
 	}
 }
