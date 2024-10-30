@@ -19,6 +19,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -82,12 +83,13 @@ public class MsppManager {
 		List<ListenerInfo> listeners = new ArrayList<ListenerInfo>();
 		
 		Reflections reflections = new Reflections(new ConfigurationBuilder()
-	            .setUrls(ClasspathHelper.forPackage("ninja.mspp"))
-	            .setScanners(new SubTypesScanner(false)));
+				.setUrls(ClasspathHelper.forPackage("ninja.mspp"))
+				.setScanners(new SubTypesScanner(false))
+				.filterInputsBy(new FilterBuilder().include("ninja.mspp.*")));
 
-	    Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
-	    for (Class<?> clazz : classes) {
-	    	Listener listener = clazz.getAnnotation(Listener.class);
+		Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
+		for (Class<?> clazz : classes) {
+			Listener listener = clazz.getAnnotation(Listener.class);
 			if (listener != null) {
 				String name = listener.value();
 				try {
@@ -100,7 +102,7 @@ public class MsppManager {
 					e.printStackTrace();
 				}
 			}
-	    }
+		}
 
 		return listeners;
 	}
