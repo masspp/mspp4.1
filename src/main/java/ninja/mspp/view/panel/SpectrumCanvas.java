@@ -8,6 +8,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -76,7 +77,36 @@ public class SpectrumCanvas extends ProfileCanvas {
 			}
 		}
 		
-		return menu;
+		Menu saveItem = new Menu("Save as");
+		menu.getItems().add(saveItem);
+		
+		MenuItem pngItem = new MenuItem("PNG...");
+		pngItem.setOnAction(
+			(e) -> {
+				try {
+					this.savePng();
+				}
+				catch(Exception ex) {
+                   ex.printStackTrace();
+                }
+		    }
+		);
+		saveItem.getItems().add(pngItem);
+		
+		MenuItem svgItem = new MenuItem("SVG...");
+		svgItem.setOnAction(
+			(e) -> {
+				try {
+					this.saveSvg();
+				}
+				catch(Exception ex) {
+                   ex.printStackTrace();
+                }
+		    }
+		);
+		saveItem.getItems().add(svgItem);
+		
+		return menu;		
 	}
 	
 	

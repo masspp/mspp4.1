@@ -3,7 +3,9 @@ package ninja.mspp.view.panel;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.imageio.ImageIO;
 
@@ -16,6 +18,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 
 public abstract class CanvasBase extends Canvas {
 	public CanvasBase() {
@@ -41,6 +44,17 @@ public abstract class CanvasBase extends Canvas {
 		onDraw(g, width, height);
 	}
 	
+	protected void savePng() throws IOException {
+		FileChooser chooser = new FileChooser();
+		chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Files", "*.png"));
+		chooser.setTitle("Save PNG File");
+		
+		File file = chooser.showSaveDialog(this.getScene().getWindow());
+		if (file != null) {
+			this.savePng(file);
+		}
+	}
+	
 	protected void savePng(File file) throws IOException {
 		int width = (int)Math.floor(this.widthProperty().doubleValue());
 		int height = (int)Math.floor(this.heightProperty().doubleValue());
@@ -53,12 +67,30 @@ public abstract class CanvasBase extends Canvas {
 		ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
 	}
 	
-	protected void saveSvg(File file) {
+	protected void saveSvg() throws IOException {
+		FileChooser chooser = new FileChooser();
+		chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("SVG Files", "*.svg"));
+		chooser.setTitle("Save SVG File");
+
+		File file = chooser.showSaveDialog(this.getScene().getWindow());
+		if (file != null) {
+			this.saveSvg(file);
+		}
+	}
+	
+	protected void saveSvg(File file) throws IOException {
 		int width = (int)Math.floor(this.widthProperty().doubleValue());
 		int height = (int)Math.floor(this.heightProperty().doubleValue());
 		
 		SVGGraphics2D g = new SVGGraphics2D(width, height);
 		this.onDraw(g, width, height);
+		
+		String svg = g.getSVGDocument();
+		PrintWriter writer = new PrintWriter(new FileWriter(file));
+		writer.print(svg);
+		writer.close();
+		
+
 	}
 	
 	@Override
