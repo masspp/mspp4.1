@@ -1,6 +1,9 @@
 package ninja.mspp.view.panel;
 
-import java.nio.IntBuffer;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Stack;
 
@@ -8,14 +11,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import javafx.scene.Cursor;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
-import javafx.scene.image.WritablePixelFormat;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.annotation.method.HeatMapCanvasBackground;
 import ninja.mspp.core.annotation.method.HeatMapCanvasForeground;
@@ -71,15 +67,12 @@ public class HeatMapCanvas extends ProfileCanvas {
 		this.draw();
 	}
 		
-	protected void drawImage(GraphicsContext g, int width, int height, Bounds margin, double[][] data) {
+	protected void drawImage(Graphics2D g, int width, int height, Bounds margin, double[][] data) {
 		int rtSize = HeatMap.RT_SIZE;
 		int mzSize = HeatMap.MZ_SIZE;
 		
 		if(this.image == null) {
-			WritableImage image = new WritableImage(rtSize, mzSize);
-			PixelWriter writer = image.getPixelWriter();
-			
-			WritablePixelFormat<IntBuffer> format = WritablePixelFormat.getIntArgbInstance();
+			BufferedImage image = new BufferedImage(rtSize, mzSize, BufferedImage.TYPE_INT_ARGB);
 			int[] pixels = new int[rtSize * mzSize];
 			
 			for(int i = 0; i < mzSize; i++) {
@@ -91,20 +84,15 @@ public class HeatMapCanvas extends ProfileCanvas {
 					pixels[index] = pixel;
 				}
 			}
-			writer.setPixels(0, 0, rtSize, mzSize, format, pixels, 0, rtSize);
+			image.setRGB(0, 0, rtSize, mzSize, pixels, 0, rtSize);
 			this.image = image;
 		}
 		
 		g.drawImage(
 			this.image,
-			0,
-			0,
-			rtSize,
-			mzSize,
-			margin.getLeft(),
-			margin.getTop(),
-			width - margin.getLeft() - margin.getRight(),
-			height - margin.getTop() - margin.getBottom()
+			(int)Math.round(margin.getLeft()),
+			(int)Math.round(margin.getTop()),
+			null
 		);
 	}
 	
@@ -290,15 +278,15 @@ public class HeatMapCanvas extends ProfileCanvas {
 	}
 
 	@Override
-	protected void onDraw(GraphicsContext gc, double width, double height) {
+	protected void onDraw(Graphics2D g, double width, double height) {
 		if(this.heatmap != null) {
-			this.drawData(gc, width, height);
+			this.drawData(g, width, height);
 		}
 	}
 
 	@Override
-	protected void drawData(GraphicsContext gc, double width, double height) {
-		gc.setFont(this.font);
+	protected void drawData(Graphics2D g, double width, double height) {
+		g.setFont(this.font);
 		
 		Range xRange = this.getXRange();
 		Range yRange = this.getYRange();
@@ -307,35 +295,38 @@ public class HeatMapCanvas extends ProfileCanvas {
 		String[] xLabels = this.getTickLabels(xTicks);
 		String[] yLabels = this.getTickLabels(yTicks);
 
-		Bounds margin = this.calculateMargin(xLabels, yLabels);
+		Bounds margin = this.calculateMargin(g, xLabels, yLabels);
 		RealMatrix matrix = calculateMatrix(width, height, xRange, yRange, margin);
 		this.matrix = matrix;
 		this.margin = margin;
 
-		drawMouseBackground(gc, matrix, width, height, margin, this.startPoint, this.currentPoint);
-		drawBackground(gc, width, height, margin, matrix, xRange, yRange);
-		drawImage(gc, (int)width, (int)height, margin, this.heatmap.getData());
-		drawForeground(gc, width, height, margin, matrix, xRange, yRange);
-		drawSelectedRange(gc);
-		drawRect(gc, margin, width, height);
-		drawXAxis(gc, xTicks, xLabels, matrix, margin, width, height);
-		drawYAxis(gc, yTicks, yLabels, matrix, margin, width, height);	
-		drawTitles(gc, width, height);
+		drawMouseBackground(g, matrix, width, height, margin, this.startPoint, this.currentPoint);
+		drawBackground(g, width, height, margin, matrix, xRange, yRange);
+		drawImage(g, (int)width, (int)height, margin, this.heatmap.getData());
+		drawForeground(g, width, height, margin, matrix, xRange, yRange);
+		drawSelectedRange(g);
+		drawRect(g, margin, width, height);
+		drawXAxis(g, xTicks, xLabels, matrix, margin, width, height);
+		drawYAxis(g, yTicks, yLabels, matrix, margin, width, height);	
+		drawTitles(g, width, height);
 	}
 	
-	private void drawSelectedRange(GraphicsContext gc) {
+	private void drawSelectedRange(Graphics2D g) {
 		if(this.startPoint != null && this.endPoint != null) {
 			double minX = Math.min(this.startPoint.getX(), this.endPoint.getX());
 			double minY = Math.min(this.startPoint.getY(), this.endPoint.getY());
 			double maxX = Math.max(this.startPoint.getX(), this.endPoint.getX());
 			double maxY = Math.max(this.startPoint.getY(), this.endPoint.getY());
 			
-			Paint oldStroke = gc.getStroke();
-			gc.setStroke(Color.GRAY);;
+			Color oldColor = g.getColor();
+			g.setColor(Color.GRAY);;
 			
-			gc.strokeRect(minX, minY, maxX - minX, maxY - minY);
+			g.drawRect(
+				(int)Math.round(minX), (int)Math.round(minY),
+				(int)Math.round(maxX - minX), (int)Math.round(maxY - minY)
+			);
 			
-			gc.setStroke(oldStroke);
+			g.setColor(oldColor);
 		}
 	}
 
@@ -346,30 +337,30 @@ public class HeatMapCanvas extends ProfileCanvas {
 	}
 
 	@Override
-	protected void drawProfile(GraphicsContext gc, RealMatrix matrix, double width, double height, Bounds margin,
+	protected void drawProfile(Graphics2D g, RealMatrix matrix, double width, double height, Bounds margin,
 			List<DrawingPoint> points) {
-		this.drawImage(gc, (int)width, (int)height, margin, this.heatmap.getData());
+		this.drawImage(g, (int)width, (int)height, margin, this.heatmap.getData());
 	}
 
 
 	@Override
-	protected void drawForeground(GraphicsContext gc, double width, double height, Bounds margin, RealMatrix matrix,
+	protected void drawForeground(Graphics2D g, double width, double height, Bounds margin, RealMatrix matrix,
 			Range xRange, Range yRange) {
 		MsppManager manager = MsppManager.getInstance();
 		
 		DrawInfo<HeatMap> drawInfo = new DrawInfo<HeatMap>(
-			this.heatmap, width, height, margin, null, matrix, xRange, yRange, gc, this
+			this.heatmap, width, height, margin, null, matrix, xRange, yRange, g, this
 		);
 		manager.invoke(HeatMapCanvasForeground.class, drawInfo);
 	}
 
 	@Override
-	protected void drawBackground(GraphicsContext gc, double width, double height, Bounds margin, RealMatrix matrix,
+	protected void drawBackground(Graphics2D g, double width, double height, Bounds margin, RealMatrix matrix,
 			Range xRange, Range yRange) {
 		MsppManager manager = MsppManager.getInstance();
 		
 		DrawInfo<HeatMap> drawInfo = new DrawInfo<HeatMap>(
-			this.heatmap, width, height, margin, null, matrix, xRange, yRange, gc, this
+			this.heatmap, width, height, margin, null, matrix, xRange, yRange, g, this
 		);
 		manager.invoke(HeatMapCanvasBackground.class, drawInfo);
 	}

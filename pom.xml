@@ -119,6 +119,12 @@
 			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-swing</artifactId>
+			<version>22.0.2</version>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>		
+		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
 			<version>0.9.9</version>
@@ -162,6 +168,16 @@
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java</artifactId>
 			<version>3.3.2</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.jfree</groupId>
+    		<artifactId>jfreesvg</artifactId>
+    		<version>3.4.3</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.jfree</groupId>
+    		<artifactId>fxgraphics2d</artifactId>
+    		<version>1.8</version>
 		</dependency>
 	</dependencies>
 

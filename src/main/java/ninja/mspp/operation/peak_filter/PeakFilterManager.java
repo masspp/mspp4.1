@@ -1,5 +1,11 @@
 package ninja.mspp.operation.peak_filter;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -13,14 +19,9 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.annotation.method.Refresh;
 import ninja.mspp.core.model.ms.DataPoints;
@@ -330,24 +331,24 @@ public class PeakFilterManager {
 	protected void drawLabel(DrawInfo<Spectrum> drawInfo, List<FilterPeak> peaks) {
 		Range xRange = drawInfo.getXRange();
 		RealMatrix matrix = drawInfo.getMatrix();
-		GraphicsContext gc = drawInfo.getContext();
+		Graphics2D g = drawInfo.getGraphics();
 		
-		Font font = new Font("Monospaced", 12);
+		Font font = new Font("Monospaced", Font.PLAIN, 12);
+		g.setFont(font);
+		FontMetrics metrics = g.getFontMetrics(font);
 		
 		List<LabelPosition> positions = new ArrayList<LabelPosition>();
 				
 		for(FilterPeak peak : peaks) {
-			Color color = Color.web(peak.getColor());
+			Color color = Color.decode(peak.getColor());
 			double mz = peak.getMz();
 			String name = peak.getName();
 			if(xRange.contains(mz)) {
 				double[] data = {mz, 0.0, 1.0};
 				double px = matrix.operate(data)[0];
-				Text text = new Text(name);
-				text.setFont(font);
 				
-				double textWidth = text.getLayoutBounds().getWidth();
-				double textHeight = text.getLayoutBounds().getHeight();
+				double textWidth = (double)metrics.stringWidth(name);
+				double textHeight = (double)metrics.getHeight();
 				
 				double textPx = px - textWidth / 2.0;
 				
@@ -358,10 +359,7 @@ public class PeakFilterManager {
                     textPx = drawInfo.right() - textWidth;
                 }
 				
-				gc.setFill(color);
-				gc.setStroke(color);
-				text.setStroke(color);
-				text.setFill(color);
+				g.setColor(color);
 				
 				int level = this.searchLevel(positions, textPx, textPx + textWidth);
 				LabelPosition position = new LabelPosition();
@@ -370,11 +368,29 @@ public class PeakFilterManager {
 				position.level = level;
 				positions.add(position);
 				
-				gc.setLineDashes(1.0, 3.0);
-				gc.strokeLine(px, drawInfo.bottom(), px, drawInfo.top() + LABEL_MARGIN + textHeight * (double)(level + 1));
-
-				gc.setLineDashes(null);
-				gc.strokeText(name, textPx, drawInfo.top() + LABEL_MARGIN + textHeight * (double)level);
+				Stroke stroke = g.getStroke();
+				
+				float[] dashPattern = {1.0f, 3.0f};
+				Stroke dotted = new BasicStroke(
+					1.0f,
+					BasicStroke.CAP_BUTT,
+	                BasicStroke.JOIN_MITER,
+	                10.0f,
+	                dashPattern,
+	                0.0f
+	            );
+				g.setStroke(dotted);
+				g.drawLine(
+					(int)Math.round(px), (int)Math.round(drawInfo.bottom()), 
+					(int)Math.round(px), (int)Math.round(drawInfo.top() + LABEL_MARGIN + textHeight * (double)(level + 1))
+				);
+				
+				g.setStroke(stroke);
+				g.drawString(
+					name, 
+					(int)Math.round(textPx), 
+					(int)Math.round(drawInfo.top() + LABEL_MARGIN + textHeight * (double)level)
+				);
 			}
 		}
 	}
@@ -403,16 +419,16 @@ public class PeakFilterManager {
 	public void drawPosition(DrawInfo<HeatMap> drawInfo) {
 		if (this.drawingLabel && this.peaks != null && this.result != null) {
 			RealMatrix matrix = drawInfo.getMatrix();
-			GraphicsContext gc = drawInfo.getContext();
+			Graphics2D g = drawInfo.getGraphics();
 			Bounds margin = drawInfo.getMargin();
 			double width = drawInfo.getWidth();
 			double height = drawInfo.getHeight();
 			
-			Paint oldPaint = gc.getStroke();
+			Color oldColor = g.getColor();
 			
-			for(FilterPeak peak : this.peaks) { 
-				Color color = Color.valueOf(peak.getColor());
-				gc.setStroke(color);
+			for(FilterPeak peak : this.peaks) {
+				Color color = Color.decode(peak.getColor());
+				g.setColor(color);
 				
 				double mz = peak.getMz();
 				
@@ -433,12 +449,15 @@ public class PeakFilterManager {
 						double minY = Math.max(margin.getTop(), Math.min(y - POSITION_SIZE, height - margin.getBottom()));
 						double maxY = Math.max(margin.getTop(), Math.min(y + POSITION_SIZE, height - margin.getBottom()));
 						
-						gc.strokeRect(minX, minY, maxX - minX, maxY - minY);
+						g.drawRect(
+							(int)Math.round(minX), (int)Math.round(minY),
+							(int)Math.round(maxX - minX), (int)Math.round(maxY - minY)
+						);
 					}
 				}
 			}
 			
-			gc.setStroke(oldPaint);
+			g.setColor(oldColor);
 		}
 	}
 

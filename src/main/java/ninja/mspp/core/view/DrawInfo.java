@@ -1,8 +1,9 @@
 package ninja.mspp.core.view;
 
+import java.awt.Graphics2D;
+
 import org.apache.commons.math3.linear.RealMatrix;
 
-import javafx.scene.canvas.GraphicsContext;
 import ninja.mspp.core.model.ms.DataPoints;
 import ninja.mspp.core.model.view.Bounds;
 import ninja.mspp.core.model.view.Range;
@@ -17,11 +18,11 @@ public class DrawInfo<T> {
 	private RealMatrix matrix;
 	private Range xRange;
 	private Range yRange;
-	private GraphicsContext context;
+	private Graphics2D g;
 	private ProfileCanvas canvas;
 	
 	public DrawInfo(T object, double width, double height, Bounds margin, DataPoints points,
-			RealMatrix matrix, Range xRange, Range yRange, GraphicsContext context, ProfileCanvas canvas) {
+			RealMatrix matrix, Range xRange, Range yRange, Graphics2D g, ProfileCanvas canvas) {
 		this.object = object;
 		this.width = width;
 		this.height = height;
@@ -30,7 +31,7 @@ public class DrawInfo<T> {
 		this.matrix = matrix;		
 		this.xRange = xRange;
 		this.yRange = yRange;
-		this.context = context;
+		this.g = g;
 		this.canvas = canvas;
 	}
 	
@@ -66,8 +67,8 @@ public class DrawInfo<T> {
 		return yRange;
 	}
 	
-	public GraphicsContext getContext() {
-		return context;
+	public Graphics2D getGraphics() {
+		return g;
 	}
 	
 	public double top() {

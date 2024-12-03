@@ -1,16 +1,16 @@
 package ninja.mspp.view.panel;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.List;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.annotation.method.ChromatogramAction;
 import ninja.mspp.core.annotation.method.ChromatogramCanvasBackground;
@@ -77,11 +77,11 @@ public class ChromatogramCanvas extends ProfileCanvas {
 	}
 	
 	@Override
-	protected void drawForeground(GraphicsContext gc, double width, double height, Bounds margin, RealMatrix matrix, Range xRange, Range yRange) {
+	protected void drawForeground(Graphics2D g, double width, double height, Bounds margin, RealMatrix matrix, Range xRange, Range yRange) {
 		MsppManager manager = MsppManager.getInstance();
 		
 		DrawInfo<Chromatogram> drawInfo = new DrawInfo<Chromatogram>(
-			this.chromatogram, width, height, margin, this.points, matrix, xRange, yRange, gc, this
+			this.chromatogram, width, height, margin, this.points, matrix, xRange, yRange, g, this
 		);
 		
 		manager.invoke(ChromatogramCanvasForeground.class, drawInfo);
@@ -89,11 +89,11 @@ public class ChromatogramCanvas extends ProfileCanvas {
 
 	
 	@Override
-	protected void drawBackground(GraphicsContext gc, double width, double height, Bounds margin, RealMatrix matrix, Range xRange, Range yRange) {
+	protected void drawBackground(Graphics2D g, double width, double height, Bounds margin, RealMatrix matrix, Range xRange, Range yRange) {
 		MsppManager manager = MsppManager.getInstance();
 		
 		DrawInfo<Chromatogram> drawInfo = new DrawInfo<Chromatogram>(
-			this.chromatogram, width, height, margin, this.points, matrix, xRange, yRange, gc, this
+			this.chromatogram, width, height, margin, this.points, matrix, xRange, yRange, g, this
 		);
 		
 		manager.invoke(ChromatogramCanvasBackground.class, drawInfo);		

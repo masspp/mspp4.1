@@ -1,11 +1,14 @@
 package ninja.mspp.misc.cycling;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 
+import javax.imageio.ImageIO;
+
 import javafx.animation.AnimationTimer;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.annotation.method.Refresh;
 import ninja.mspp.core.model.ms.Chromatogram;
@@ -42,21 +45,21 @@ public class CyclingManager {
 	private ProfileCanvas spectrumCanvas;
 	private int prevSpecIndex;
 		
-	private CyclingManager() {
+	private CyclingManager() throws IOException {
 		loadImages();
 	}
 	
-	private void loadImages() {
+	private void loadImages() throws IOException {
 		this.imageF1 = this.loadImage("cycling-f1.png");
 		this.imageF2 = this.loadImage("cycling-f2.png");
 		this.imageM1 = this.loadImage("cycling-m1.png");
 		this.imageM2 = this.loadImage("cycling-m2.png");		
 	}
 	
-	private Image loadImage(String file) {
+	private Image loadImage(String file) throws IOException {
 		String path = "/ninja/mspp/images/animation/" + file;
 		InputStream stream = this.getClass().getResourceAsStream(path);
-		Image image = new Image(stream);
+		Image image = ImageIO.read(stream);
 		return image;
 	}
 	
@@ -121,14 +124,15 @@ public class CyclingManager {
 			double[] coordinate = {x, y, 1.0};
 			double[] position = info.getMatrix().operate(coordinate);
 			
-			GraphicsContext gc = info.getContext();
+			Graphics2D g = info.getGraphics();
 			
-			gc.drawImage(
+			g.drawImage(
 				image,
-				position[0] - IMAGE_SIZE / 2.0,
-				position[1] - IMAGE_SIZE,
-				IMAGE_SIZE,
-				IMAGE_SIZE
+				(int)Math.round(position[0] - IMAGE_SIZE / 2.0),
+				(int)Math.round(position[1] - IMAGE_SIZE),
+				(int)Math.round(IMAGE_SIZE),
+				(int)Math.round(IMAGE_SIZE),
+				null
 			);
 		}
 	}	
@@ -204,14 +208,15 @@ public class CyclingManager {
 			double[] coordinate = {x, y, 1.0};
 			double[] position = info.getMatrix().operate(coordinate);
 			
-			GraphicsContext gc = info.getContext();
+			Graphics2D g = info.getGraphics();
 			
-			gc.drawImage(
+			g.drawImage(
 				image,
-				position[0] - IMAGE_SIZE / 2.0,
-				position[1] - IMAGE_SIZE,
-				IMAGE_SIZE,
-				IMAGE_SIZE
+				(int)Math.round(position[0] - IMAGE_SIZE / 2.0),
+				(int)Math.round(position[1] - IMAGE_SIZE),
+				(int)Math.round(IMAGE_SIZE),
+				(int)Math.round(IMAGE_SIZE),
+				null
 			);
 		}
 	}
@@ -227,7 +232,7 @@ public class CyclingManager {
 	}
 	
 	
-	public static CyclingManager getInstance() {
+	public static CyclingManager getInstance() throws IOException {
 		if (instance == null) {
 			instance = new CyclingManager();
 		}

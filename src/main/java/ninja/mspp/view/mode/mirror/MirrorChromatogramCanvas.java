@@ -1,6 +1,7 @@
 package ninja.mspp.view.mode.mirror;
 
-import javafx.scene.paint.Color;
+import java.awt.Color;
+
 import ninja.mspp.core.model.ms.Chromatogram;
 import ninja.mspp.core.model.ms.DataPoints;
 

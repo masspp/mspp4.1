@@ -1,12 +1,12 @@
 package ninja.mspp.view.mode.mirror;
 
+import java.awt.Graphics2D;
 import java.util.List;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import javafx.scene.canvas.GraphicsContext;
 import ninja.mspp.core.model.ms.DataPoints;
 import ninja.mspp.core.model.view.Bounds;
 import ninja.mspp.core.model.view.DrawingData;
@@ -144,15 +144,15 @@ public class MirrorCanvas extends ProfileCanvas {
 	}	
 	
 	@Override
-	protected void onDraw(GraphicsContext gc, double width, double height) {
+	protected void onDraw(Graphics2D g, double width, double height) {
 		if(this.data != null || this.data2 != null) {
-			drawData(gc, width, height);
+			drawData(g, width, height);
 		}
 	}
 	
 	@Override
-	protected void drawData(GraphicsContext gc, double width, double height) {
-		gc.setFont(this.font);
+	protected void drawData(Graphics2D g, double width, double height) {
+		g.setFont(this.font);
 		
 		Range xRange = this.getXRange();
 		Range yRange = this.getYRange();
@@ -161,7 +161,7 @@ public class MirrorCanvas extends ProfileCanvas {
 		String[] xLabels = this.getTickLabels(xTicks);
 		String[] yLabels = this.getTickLabels(yTicks);
 
-		Bounds margin = this.calculateMargin(xLabels, yLabels);
+		Bounds margin = this.calculateMargin(g, xLabels, yLabels);
 		int center = (int)Math.round((height - margin.getTop() - margin.getBottom()) / 2.0 + margin.getTop());
 		Bounds margin1 = new Bounds(margin.getTop(), margin.getRight(), (int)height - center, margin.getLeft());
 		Bounds margin2 = new Bounds(center, margin.getRight(), margin.getBottom(), margin.getLeft());
@@ -185,19 +185,19 @@ public class MirrorCanvas extends ProfileCanvas {
 			points2 = this.data2.getPoints(level2);
 		}
 
-		drawMouseBackground(gc, matrix, width, height, margin, this.startPoint, this.currentPoint);
-		drawBackground(gc, width, height, margin, matrix, xRange, yRange);
+		drawMouseBackground(g, matrix, width, height, margin, this.startPoint, this.currentPoint);
+		drawBackground(g, width, height, margin, matrix, xRange, yRange);
 		if(points1 != null) {
-			drawProfile(gc, matrix1, width, height, margin1, points1);
+			drawProfile(g, matrix1, width, height, margin1, points1);
 		}
 		if(points2 != null) {
-			drawProfile(gc, matrix2, width, height, margin2, points2);
+			drawProfile(g, matrix2, width, height, margin2, points2);
 		}
-		drawForeground(gc, width, height, margin, matrix, xRange, yRange);
-		drawRect(gc, margin, width, height);
-		drawXAxis(gc, xTicks, xLabels, matrix1, margin, width, height);
-		drawYAxis(gc, yTicks, yLabels, matrix1, margin1, width, height);
-		drawYAxis(gc, yTicks, yLabels, matrix2, margin2, width, height);
-		drawTitles(gc, width, height);
+		drawForeground(g, width, height, margin, matrix, xRange, yRange);
+		drawRect(g, margin, width, height);
+		drawXAxis(g, xTicks, xLabels, matrix1, margin, width, height);
+		drawYAxis(g, yTicks, yLabels, matrix1, margin1, width, height);
+		drawYAxis(g, yTicks, yLabels, matrix2, margin2, width, height);
+		drawTitles(g, width, height);
 	}	
 }

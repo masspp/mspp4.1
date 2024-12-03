@@ -28,7 +28,6 @@ public class DockerManager {
 		return this.folder;
 	}
 	
-	
 	public DockerManager getInstance() {
 		if(instance == null) {
 			instance = new DockerManager();
