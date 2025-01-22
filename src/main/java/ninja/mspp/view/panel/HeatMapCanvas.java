@@ -92,6 +92,8 @@ public class HeatMapCanvas extends ProfileCanvas {
 			this.image,
 			(int)Math.round(margin.getLeft()),
 			(int)Math.round(margin.getTop()),
+			(int)Math.round((double)width - margin.getRight() - margin.getLeft()),
+			(int)Math.round((double)height - margin.getTop() - margin.getBottom()),
 			null
 		);
 	}
@@ -218,7 +220,8 @@ public class HeatMapCanvas extends ProfileCanvas {
 		
 		Bounds margin = this.margin;
 		
-		if(x >= margin.getLeft() && x <= width - margin.getHeight()
+		if(margin != null
+				&& x >= margin.getLeft() && x <= width - margin.getHeight()
 				&& y >= margin.getTop() && y <=  height - margin.getBottom()) {
 			this.setCursor(Cursor.CROSSHAIR);
 		}
@@ -312,22 +315,20 @@ public class HeatMapCanvas extends ProfileCanvas {
 	}
 	
 	private void drawSelectedRange(Graphics2D g) {
+		Color oldColor = g.getColor();		
+		g.setColor(Color.GRAY);
 		if(this.startPoint != null && this.endPoint != null) {
 			double minX = Math.min(this.startPoint.getX(), this.endPoint.getX());
 			double minY = Math.min(this.startPoint.getY(), this.endPoint.getY());
 			double maxX = Math.max(this.startPoint.getX(), this.endPoint.getX());
 			double maxY = Math.max(this.startPoint.getY(), this.endPoint.getY());
 			
-			Color oldColor = g.getColor();
-			g.setColor(Color.GRAY);;
-			
 			g.drawRect(
 				(int)Math.round(minX), (int)Math.round(minY),
 				(int)Math.round(maxX - minX), (int)Math.round(maxY - minY)
 			);
-			
-			g.setColor(oldColor);
 		}
+		g.setColor(oldColor);
 	}
 
 	@Override

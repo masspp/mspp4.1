@@ -340,7 +340,7 @@ public class PeakFilterManager {
 		List<LabelPosition> positions = new ArrayList<LabelPosition>();
 				
 		for(FilterPeak peak : peaks) {
-			Color color = Color.decode(peak.getColor());
+			Color color = this.getColor(peak.getColor());
 			double mz = peak.getMz();
 			String name = peak.getName();
 			if(xRange.contains(mz)) {
@@ -427,7 +427,11 @@ public class PeakFilterManager {
 			Color oldColor = g.getColor();
 			
 			for(FilterPeak peak : this.peaks) {
-				Color color = Color.decode(peak.getColor());
+				String colorString = peak.getColor();
+				if(colorString.length() > 6) {
+					colorString = colorString.substring(0, 6);
+				}
+				Color color = this.getColor(peak.getColor());
 				g.setColor(color);
 				
 				double mz = peak.getMz();
@@ -459,6 +463,13 @@ public class PeakFilterManager {
 			
 			g.setColor(oldColor);
 		}
+	}
+	
+	private Color getColor(String colorString) {
+		if (colorString.length() > 6) {
+			colorString = colorString.substring(2);
+		}
+		return Color.decode(colorString);
 	}
 
 	
