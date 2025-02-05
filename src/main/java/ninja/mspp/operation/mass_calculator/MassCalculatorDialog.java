@@ -1,7 +1,14 @@
 package ninja.mspp.operation.mass_calculator;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import org.glycoinfo.ms.GlycanMassUtility.dict.molecule.NeutralType;
+import org.glycoinfo.ms.GlycanMassUtility.om.IMassElement;
+import org.glycoinfo.ms.GlycanMassUtility.om.IonCloud;
+import org.glycoinfo.ms.GlycanMassUtility.om.Molecule;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,9 +26,9 @@ import javafx.scene.control.ToggleGroup;
 import javafx.stage.Stage;
 import ninja.mspp.MsppManager;
 import ninja.mspp.core.model.ms.Sample;
-import ninja.mspp.operation.mass_calculator.model.IMassCalculator;
-import ninja.mspp.operation.mass_calculator.model.MassCalculatorFactory;
-import ninja.mspp.operation.mass_calculator.model.MassCalculatorType;
+import ninja.mspp.operation.mass_calculator.model.mass.CompoundCreator;
+import ninja.mspp.operation.mass_calculator.model.mass.CompoundType;
+import ninja.mspp.operation.mass_calculator.model.mass.MassCalculator;
 import ninja.mspp.operation.peak_filter.PeakFilterDialog;
 
 public class MassCalculatorDialog {
@@ -45,10 +52,25 @@ public class MassCalculatorDialog {
 	private RadioButton mhRadioButton;
 
 	@FXML
+	private RadioButton m2hRadioButton;
+
+	@FXML
+	private RadioButton m3hRadioButton;
+
+	@FXML
 	private RadioButton mNaRadioButton;
 
 	@FXML
 	private RadioButton m2NaRadioButton;
+
+	@FXML
+	private RadioButton m3NaRadioButton;
+
+	@FXML
+	private RadioButton mXRadioButton;
+
+	@FXML
+	private TextField ionField;
 
 	@FXML
 	private CheckBox watLossCheckBox;
@@ -70,19 +92,22 @@ public class MassCalculatorDialog {
 	@FXML
 	private void initialize() {
 		// Add items to ChoiceBox
-		typeChoiceBox.getItems().addAll(
-				"Chemical composition",
-				"Peptide/protain sequence",
-				"Glycan composition"
-			);
+		List<String> typeNames = new ArrayList<>();
+		for (CompoundType type : CompoundType.values())
+			typeNames.add(type.getName());
+		typeChoiceBox.getItems().addAll(typeNames);
 		typeChoiceBox.getSelectionModel().selectFirst();
 		updateEgLabel();
 
 		// Create and set up the ToggleGroup for the RadioButtons
 		adductGroup = new ToggleGroup();
 		mhRadioButton.setToggleGroup(adductGroup);
+		m2hRadioButton.setToggleGroup(adductGroup);
+		m3hRadioButton.setToggleGroup(adductGroup);
 		mNaRadioButton.setToggleGroup(adductGroup);
 		m2NaRadioButton.setToggleGroup(adductGroup);
+		m3NaRadioButton.setToggleGroup(adductGroup);
+		mXRadioButton.setToggleGroup(adductGroup);
 
 		// Initial settings and other initialization tasks
 		warningLabel.setText("");  // Clear initial warning message
@@ -91,23 +116,16 @@ public class MassCalculatorDialog {
 		nameField.textProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
 		typeChoiceBox.valueProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
 		adductGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
+		ionField.textProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
 		watLossCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> handleInputChange());
 
 		currentStageForPeakFilter = null;
 	}
 
 	private void updateEgLabel() {
-		switch (getSelectedType()) {
-		case CHEMICAL_COMPOSITION:
-			egLabel.setText("e.g. C6H12O6");
-			break;
-		case PEPTIDE:
-			egLabel.setText("e.g. PEPTIDE");
-			break;
-		case GLYCAN_COMPOSITION:
-			egLabel.setText("e.g. HexNAc(2)Hex(3)");
-			break;
-		}
+		egLabel.setText("");
+		if (getSelectedType() != null)
+			egLabel.setText("e.g. " + getSelectedType().getEg());
 	}
 
 	private void reset() {
@@ -117,6 +135,7 @@ public class MassCalculatorDialog {
 
 		warningLabel.setText("");
 		massField.setText("");
+		ionField.setText("");
 		mzField.setText("");
 	}
 
@@ -127,7 +146,7 @@ public class MassCalculatorDialog {
 
 		updateEgLabel();
 
-		MassCalculatorType type = getSelectedType();
+		CompoundType type = getSelectedType();
 		String name = nameField.getText();
 		if (name.isEmpty()) {
 			massField.clear();
@@ -135,26 +154,39 @@ public class MassCalculatorDialog {
 			return;
 		}
 
-		String ion = getSelectedIon();
-
-		String waterLoss = watLossCheckBox.isSelected() ? "H2O" : null;
+		ionField.setEditable(false);
+		ionField.setDisable(true);
+		if (mXRadioButton.isSelected()) {
+			ionField.setEditable(true);
+			ionField.setDisable(false);
+			if (ionField.getText().isEmpty()) {
+				mzField.clear();
+				return;
+			}
+		}
 
 		// Calculate mass and mz
-		IMassCalculator calc = MassCalculatorFactory.createMassCalculator(type);
-		// validate input
-		String error = calc.validate(name);
-		if (error != null) {
-			warningLabel.setText(error);
+		MassCalculator calc = new MassCalculator();
+		try {
+			IMassElement compound = CompoundCreator.create(name, type);
+			calc.addCompound(compound);
+
+			IonCloud ionCloud = IonCloud.parse( getSelectedIon() );
+
+			Molecule waterLoss = null;
+			if ( watLossCheckBox.isSelected() )
+				waterLoss = NeutralType.Water.getMolecule();
+
+			// Display mass and mz
+			massField.setText(String.valueOf(calc.computeMass()));
+			mzField.setText(String.valueOf(calc.computeMz(ionCloud, waterLoss)));
+		} catch (IllegalArgumentException e) {
+			// handle invalid input
+			warningLabel.setText(e.getMessage());
 			massField.clear();
 			mzField.clear();
 			return;
 		}
-		double mass = calc.computeMass(name);
-		double mz = calc.computeMz(name, ion, waterLoss);
-
-		// Display mass and mz
-		massField.setText(String.valueOf(mass));
-		mzField.setText(String.valueOf(mz));
 	}
 
 	@FXML
@@ -206,25 +238,25 @@ public class MassCalculatorDialog {
 		reset();
 	}
 
-	private MassCalculatorType getSelectedType() {
-		switch (typeChoiceBox.getValue()) {
-		case "Chemical composition":
-			return MassCalculatorType.CHEMICAL_COMPOSITION;
-		case "Peptide/protain sequence":
-			return MassCalculatorType.PEPTIDE;
-		case "Glycan composition":
-			return MassCalculatorType.GLYCAN_COMPOSITION;
-		}
-		return null;
+	private CompoundType getSelectedType() {
+		return CompoundType.fromName(typeChoiceBox.getValue());
 	}
 
 	private String getSelectedIon() {
 		if (mhRadioButton.isSelected())
 			return "H";
+		else if (m2hRadioButton.isSelected())
+			return "2H";
+		else if (m3hRadioButton.isSelected())
+			return "3H";
 		else if (mNaRadioButton.isSelected())
 			return "Na";
 		else if (m2NaRadioButton.isSelected())
 			return "2Na";
+		else if (m3NaRadioButton.isSelected())
+			return "3Na";
+		else if (mXRadioButton.isSelected())
+			return ionField.getText();
 		return null;
 	}
 
